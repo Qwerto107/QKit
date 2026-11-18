@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.release/
+release-assets/
+.cache/
+.sites-runtime/
+.env
+.env.*
+!.env.example

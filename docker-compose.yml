@@ -1,0 +1,11 @@
+name: qkit
+
+services:
+  qkit:
+    image: ghcr.io/qwerto107/qkit:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:7980:8080"
+    read_only: true
+    tmpfs:
+      - /tmp

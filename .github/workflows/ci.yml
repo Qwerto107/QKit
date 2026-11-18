@@ -1,0 +1,223 @@
+name: 构建、检查与发布
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "tests/**"
+      - "scripts/**"
+      - "index.html"
+      - "package*.json"
+      - ".github/**"
+      - "docker/**"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - ".dockerignore"
+      - ".gitattributes"
+      - "docs/deployment.md"
+  pull_request:
+    paths:
+      - "src/**"
+      - "public/**"
+      - "tests/**"
+      - "scripts/**"
+      - "index.html"
+      - "package*.json"
+      - ".github/**"
+      - "docker/**"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - ".dockerignore"
+      - ".gitattributes"
+      - "docs/deployment.md"
+  workflow_dispatch:
+    inputs:
+      publish_images:
+        description: "检查通过后发布多架构镜像（仅 main）"
+        type: boolean
+        default: false
+      full_checks:
+        description: "额外运行依赖检查、容器健康检查和路由检查"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# 日常检查保留最新提交，发布任务不中途取消。
+concurrency:
+  group: qkit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') && !(github.event_name == 'workflow_dispatch' && inputs.publish_images) }}
+
+jobs:
+  frontend:
+    name: 前端检查与构建
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: 校验版本标签
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          [[ "$GITHUB_REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]
+          [[ ${#GITHUB_REF_NAME} -le 100 ]]
+      - name: 安装、测试与构建
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+          npm run build
+      - name: 依赖漏洞检查
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.full_checks)
+        run: npm audit --omit=dev --audit-level=high
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: qkit-webui-dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  package:
+    name: 静态站点打包
+    needs: frontend
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: qkit-webui-dist
+          path: dist/
+      - name: 打包与生成校验文件
+        run: bash .github/scripts/package-site.sh
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: qkit-static
+          path: release-assets/qkit-static.tar.gz*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+  docker:
+    name: 容器部署检查
+    needs: package
+    if: github.event_name == 'workflow_dispatch' && inputs.full_checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: qkit-static
+          path: .release/
+      - name: 校验产物并启动容器
+        run: |
+          (cd .release && sha256sum -c qkit-static.tar.gz.sha256 && tar -xzf qkit-static.tar.gz)
+          docker build --target release -t qkit:check .
+          docker run -d --name qkit-check -p 127.0.0.1:7980:8080 --read-only --tmpfs /tmp qkit:check
+      - name: 检查首页、独立路由及资源响应
+        run: |
+          url=http://127.0.0.1:7980
+          curl --fail --silent --show-error --retry 10 --retry-connrefused "$url/healthz" > /dev/null
+          curl --fail --silent --show-error "$url/" > /tmp/qkit-home.html
+          curl --fail --silent --show-error "$url/blind-watermark" > /tmp/qkit-route.html
+          cmp /tmp/qkit-home.html /tmp/qkit-route.html
+          asset="$(find .release/site/assets -name '*.wasm' -printf '%f\n' -quit)"
+          test -n "$asset"
+          curl --fail --silent --show-error -I "$url/assets/$asset" | grep -i '^Content-Type: application/wasm'
+          test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' "$url/assets/nonexistent.js")" = 404
+      - name: 失败日志
+        if: failure()
+        run: docker logs qkit-check || true
+      - name: 清理容器
+        if: always()
+        run: docker rm -f -v qkit-check || true
+
+  images:
+    name: 发布多架构镜像
+    needs: [frontend, package, docker]
+    if: >-
+      always() && needs.frontend.result == 'success' && needs.package.result == 'success' &&
+      (needs.docker.result == 'success' || needs.docker.result == 'skipped') &&
+      ((github.event_name == 'workflow_dispatch' && inputs.publish_images && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: qkit-static
+          path: .release/
+      - name: 校验并解压静态站点
+        run: |
+          cd .release
+          sha256sum -c qkit-static.tar.gz.sha256
+          tar -xzf qkit-static.tar.gz
+      - name: 生成镜像标签
+        id: meta
+        run: bash .github/scripts/image-tags.sh
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: 复用静态产物发布镜像
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: Dockerfile
+          target: release
+          platforms: linux/amd64,linux/arm64,linux/arm/v6
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.title=QKit
+          cache-from: type=gha,scope=qkit
+          cache-to: type=gha,scope=qkit,mode=max
+
+  release:
+    name: 发布版本附件
+    needs: [package, images]
+    if: >-
+      always() && needs.package.result == 'success' && needs.images.result == 'success' &&
+      github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: qkit-static
+          path: release-assets/
+      - name: 上传、核对附件并公开 Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: bash .github/scripts/publish-release.sh

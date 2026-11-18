@@ -1,0 +1,3 @@
+xpinyin==0.7.7
+jieba==0.42.1
+pygtrans==1.6.2

@@ -1,0 +1,1083 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>QKit 前端工具箱</title>
+    <meta
+      name="description"
+      content="QKit 纯前端工具箱：密码生成、编解码、图片水印与动态二维码传输，数据在浏览器本地处理。"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script>
+      // 首次绘制前恢复主题，控件初始化完成后再显示页面，避免刷新闪动。
+      document.documentElement.classList.add("booting");
+      try {
+        const hue = JSON.parse(localStorage.getItem("qkit.hue"));
+        if ([250, 225, 200, 275, 305, 5].includes(hue))
+          document.documentElement.style.setProperty("--h", hue);
+        const theme = JSON.parse(localStorage.getItem("qkit.theme"));
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {
+        // 本地存储不可用时使用系统主题。
+      }
+    </script>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="qr" viewBox="0 0 24 24">
+          <path
+            d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM21 14v3m-7 4h3m4-2v2"
+          />
+        </symbol>
+        <symbol id="box" viewBox="0 0 24 24">
+          <path
+            d="m7.5 4.3 9 5.2M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7zM3.3 7 12 12l8.7-5M12 22V12"
+          />
+        </symbol>
+        <symbol id="book" viewBox="0 0 24 24">
+          <path
+            d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
+          />
+        </symbol>
+        <symbol id="key" viewBox="0 0 24 24">
+          <path d="m21 2-9.6 9.6" />
+          <circle cx="7.5" cy="15.5" r="5.5" />
+          <path d="m15.5 7.5 3 3L22 7l-3-3" />
+        </symbol>
+        <symbol id="img" viewBox="0 0 24 24">
+          <rect width="18" height="18" x="3" y="3" rx="2" />
+          <circle cx="9" cy="9" r="2" />
+          <path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21" />
+        </symbol>
+        <symbol id="lock" viewBox="0 0 24 24">
+          <rect width="18" height="11" x="3" y="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </symbol>
+        <symbol id="link" viewBox="0 0 24 24">
+          <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" />
+          <path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" />
+        </symbol>
+        <symbol id="clock" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6l4 2" />
+        </symbol>
+        <symbol id="hash-icon" viewBox="0 0 24 24">
+          <path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18" />
+        </symbol>
+        <symbol id="shield" viewBox="0 0 24 24">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="m9 12 2 2 4-4" />
+        </symbol>
+        <symbol id="sun" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4" />
+          <path
+            d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+          />
+        </symbol>
+        <symbol id="moon" viewBox="0 0 24 24">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" />
+        </symbol>
+        <symbol id="copy" viewBox="0 0 24 24">
+          <rect width="14" height="14" x="8" y="8" rx="2" />
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+        </symbol>
+        <symbol id="up" viewBox="0 0 24 24">
+          <path
+            d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+          />
+        </symbol>
+        <symbol id="swap" viewBox="0 0 24 24">
+          <path d="m16 3 4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16" />
+        </symbol>
+        <symbol id="plus" viewBox="0 0 24 24">
+          <path d="M5 12h14M12 5v14" />
+        </symbol>
+        <symbol id="minus" viewBox="0 0 24 24"><path d="M5 12h14" /></symbol>
+        <symbol id="ck" viewBox="0 0 24 24">
+          <path d="M20 6 9 17l-5-5" />
+        </symbol>
+        <symbol id="trash" viewBox="0 0 24 24">
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+        </symbol>
+        <symbol id="rf" viewBox="0 0 24 24">
+          <path
+            d="M21 12a9 9 0 0 1-15.5 6.2L3 16M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M3 21v-5h5"
+          />
+        </symbol>
+        <symbol id="dl" viewBox="0 0 24 24">
+          <path
+            d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+          />
+        </symbol>
+        <symbol id="un" viewBox="0 0 24 24">
+          <rect width="18" height="11" x="3" y="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <div class="app">
+      <aside>
+        <header>
+          <div class="logo">
+            <svg class="i"><use href="#box" /></svg>
+          </div>
+          <div>
+            <h1>QKit</h1>
+          </div>
+          <div class="grow"></div>
+          <button class="ib" id="theme" aria-label="切换主题">
+            <svg class="i s"><use href="#sun" /></svg
+            ><svg class="i m"><use href="#moon" /></svg>
+          </button>
+        </header>
+
+        <label class="srch" hidden
+          ><svg class="i" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" /></svg
+          ><input id="q" placeholder="搜索工具" /><kbd>Ctrl K</kbd></label
+        >
+        <nav id="nav"></nav>
+        <div class="pal" id="pal" role="group" aria-label="配色">
+          <span>配色</span>
+          <button
+            class="on"
+            style="--c: 250"
+            data-h="250"
+            title="蓝色"
+            aria-label="蓝色"
+            aria-pressed="true"
+          ></button>
+          <button
+            style="--c: 225"
+            data-h="225"
+            title="天蓝色"
+            aria-label="天蓝色"
+            aria-pressed="false"
+          ></button>
+          <button
+            style="--c: 200"
+            data-h="200"
+            title="青色"
+            aria-label="青色"
+            aria-pressed="false"
+          ></button>
+          <button
+            style="--c: 275"
+            data-h="275"
+            title="靛蓝色"
+            aria-label="靛蓝色"
+            aria-pressed="false"
+          ></button>
+          <button
+            style="--c: 305"
+            data-h="305"
+            title="紫色"
+            aria-label="紫色"
+            aria-pressed="false"
+          ></button>
+          <button
+            style="--c: 5"
+            data-h="5"
+            title="玫红色"
+            aria-label="玫红色"
+            aria-pressed="false"
+          ></button>
+        </div>
+      </aside>
+      <main class="wrap" id="main">
+        <!-- 随机密码 -->
+        <section class="panel on" id="pwd">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#key" /></svg>
+            </div>
+            <div>
+              <h2>随机密码生成器</h2>
+              <p>按字符范围与规则批量生成高强度密码</p>
+            </div>
+          </div>
+          <div id="password-random">
+            <h3>字符范围</h3>
+            <div
+              class="chips"
+              data-c="数字 0-9*,小写字母 a-z*,大写字母 A-Z*,完整符号 !@#$%^&amp;*()_+&lt;&gt;=?|~,符号 !#$%&amp;+-&lt;&gt;?,符号 !?+#$%&amp;*,下划线 _,自定义字符"
+            ></div>
+            <h3 style="margin-top: 22px">安全选项</h3>
+            <div
+              class="chips"
+              data-c="不重复字符*,排除易混淆字符*,启用最少字符数量*"
+            ></div>
+            <label class="fl excluded-characters"
+              >排除指定字符
+              <input
+                id="password-excluded"
+                placeholder="输入不希望出现的字符，区分大小写"
+                maxlength="256"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </label>
+            <div
+              class="sc-row"
+              data-s="数字:6,小写字母:4,大写字母:4,符号:1,自定义:0"
+            ></div>
+            <h3 style="margin-top: 22px">生成设置</h3>
+            <div class="rg">
+              <b>密码长度</b><input type="range" min="4" max="64" value="24" />
+              <div class="step" data-lk>
+                <button>
+                  <svg class="i"><use href="#minus" /></svg></button
+                ><input value="24" /><button>
+                  <svg class="i"><use href="#plus" /></svg>
+                </button>
+              </div>
+            </div>
+            <div class="rg">
+              <b>生成数量</b><input type="range" min="1" max="50" value="10" />
+              <div class="step" data-lk>
+                <button>
+                  <svg class="i"><use href="#minus" /></svg></button
+                ><input value="10" /><button>
+                  <svg class="i"><use href="#plus" /></svg>
+                </button>
+              </div>
+            </div>
+            <div class="bar">
+              <button class="btn p">
+                <svg class="i"><use href="#rf" /></svg>生成密码
+              </button>
+              <button class="btn">
+                <svg class="i"><use href="#trash" /></svg>清空结果
+              </button>
+              <button class="btn">保存配置</button
+              ><button class="btn">重置配置</button>
+            </div>
+            <div class="res">
+              <div class="r">
+                <em>强度 很高</em><code>Kp7#xR2mQ9vL4zTe8NwB5hYc</code
+                ><button class="mini">
+                  <svg class="i"><use href="#copy" /></svg>
+                </button>
+              </div>
+              <div class="r">
+                <em>强度 很高</em><code>f3Hs9Vd2?Ub6Jx7Ga1Zk8Rq4</code
+                ><button class="mini">
+                  <svg class="i"><use href="#copy" /></svg>
+                </button>
+              </div>
+              <div class="r">
+                <em>强度 很高</em><code>Wm5Te8Yp3&amp;Cn2Lf9Xs6Dh1Ab</code
+                ><button class="mini">
+                  <svg class="i"><use href="#copy" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="poem">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#book" /></svg>
+            </div>
+            <div>
+              <h2>诗词密码生成</h2>
+              <p>从随机诗句中生成密码，结合词语线索辅助记忆</p>
+            </div>
+          </div>
+          <div class="warn" role="note">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"
+              />
+            </svg>
+            <div>
+              <b>请勿直接使用生成的密码</b>
+              诗词密码由公开诗句按固定规则提取，存在一定规律。可在结果基础上自行调整几位，或加入只有自己知道的字符。
+            </div>
+          </div>
+          <h3 style="margin-top: 20px">生成规则</h3>
+          <div class="top" style="margin-bottom: 0">
+            <div
+              class="chips poem-options"
+              data-c="首字母大写*,使用符号*,数字替换*,英文词替换"
+            ></div>
+            <label class="cnt"
+              >每批数量
+              <div class="step">
+                <button>
+                  <svg class="i"><use href="#minus" /></svg></button
+                ><input
+                  id="poem-count"
+                  value="8"
+                  min="1"
+                  max="50"
+                  inputmode="numeric"
+                  aria-label="诗词每批数量"
+                /><button>
+                  <svg class="i"><use href="#plus" /></svg>
+                </button></div
+            ></label>
+          </div>
+          <div
+            class="poem-length"
+            role="group"
+            aria-labelledby="poem-length-label"
+          >
+            <div class="poem-length-heading">
+              <div class="poem-length-title">
+                <b id="poem-length-label">诗句字数</b>
+                <button
+                  type="button"
+                  class="poem-length-reset"
+                  id="poem-reset-length"
+                  title="恢复默认 12～18 字"
+                  aria-label="重置诗句字数为 12～18 字"
+                >
+                  重置
+                </button>
+              </div>
+              <span
+                ><output
+                  id="poem-length-value"
+                  for="poem-min-length poem-max-length"
+                  >12–18</output
+                >
+                字</span
+              >
+            </div>
+            <div class="poem-range">
+              <input
+                id="poem-min-length"
+                type="range"
+                min="6"
+                max="32"
+                value="12"
+                aria-label="最短诗句字数"
+              />
+              <input
+                id="poem-max-length"
+                type="range"
+                min="6"
+                max="32"
+                value="18"
+                aria-label="最长诗句字数"
+              />
+            </div>
+          </div>
+          <div class="bar">
+            <button id="generate-poetry" class="btn p">
+              <svg class="i"><use href="#rf" /></svg>换一批</button
+            ><button class="btn">
+              <svg class="i"><use href="#copy" /></svg>复制全部</button
+            ><button class="btn">
+              <svg class="i"><use href="#trash" /></svg>清空
+            </button>
+            <button class="btn" id="poem-save-config">保存配置</button>
+            <button class="btn" id="poem-reset-config">重置配置</button>
+          </div>
+          <p class="hint">
+            <svg class="i" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4M12 8h.01" /></svg
+            >悬停或点击线索，联动高亮中文与密码片段，帮助记忆
+          </p>
+          <p id="poetry-empty" class="poetry-empty" hidden>
+            暂无结果，点击“换一批”生成。
+          </p>
+          <div class="pg" id="pg" aria-live="polite"></div>
+        </section>
+
+        <!-- Base64 -->
+        <section class="panel" id="b64">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#img" /></svg>
+            </div>
+            <div>
+              <h2>Base64 编解码</h2>
+              <p>支持文本与图片，图片可转为 Data URI</p>
+            </div>
+          </div>
+          <div class="top">
+            <div class="seg" data-show="b64m">
+              <button class="on" data-v="txt">文本</button
+              ><button data-v="pic">图片</button>
+            </div>
+          </div>
+          <div
+            id="b64m-txt"
+            class="io"
+            data-io="输入|转换结果|输入原文，或粘贴要解码的 Base64"
+          ></div>
+          <div id="b64m-pic" class="hide">
+            <div class="two">
+              <div class="drop">
+                <svg class="i"><use href="#up" /></svg
+                ><b>拖入图片，或点击选择</b
+                ><span>支持 PNG、JPG、GIF、WebP、SVG</span>
+              </div>
+              <div class="f">
+                <div class="fh">
+                  <span>Base64 / Data URI</span
+                  ><button class="mini">
+                    <svg class="i"><use href="#copy" /></svg>
+                  </button>
+                </div>
+                <textarea
+                  placeholder="选择图片生成 Data URI，或粘贴完整 Data URI 后点击解码"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="bar">
+            <button class="btn p">
+              <svg class="i"><use href="#rf" /></svg>编码</button
+            ><button class="btn">
+              <svg class="i"><use href="#rf" /></svg>解码</button
+            ><button class="btn">
+              <svg class="i"><use href="#trash" /></svg>清空</button
+            ><button class="btn">
+              <svg class="i"><use href="#dl" /></svg>下载结果
+            </button>
+          </div>
+        </section>
+
+        <!-- URL -->
+        <section class="panel" id="url">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#link" /></svg>
+            </div>
+            <div>
+              <h2>URL 编解码</h2>
+              <p>处理链接与参数中的特殊字符</p>
+            </div>
+          </div>
+          <div class="top">
+            <div class="seg">
+              <button class="on">组件模式</button><button>完整 URL</button>
+            </div>
+          </div>
+          <div
+            class="io"
+            data-io="原始内容|转换结果|https://example.com/search?q=你好 世界"
+          ></div>
+          <div class="bar">
+            <button class="btn p">
+              <svg class="i"><use href="#rf" /></svg>编码</button
+            ><button class="btn">
+              <svg class="i"><use href="#rf" /></svg>解码</button
+            ><button class="btn">
+              <svg class="i"><use href="#trash" /></svg>清空
+            </button>
+          </div>
+        </section>
+
+        <!-- AES/DES -->
+        <section class="panel" id="aes">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#lock" /></svg>
+            </div>
+            <div>
+              <h2>AES / DES 加解密</h2>
+              <p>对称加密，可配置模式、填充与输出格式</p>
+            </div>
+          </div>
+          <div class="top">
+            <div class="seg">
+              <button class="on">AES</button><button>DES</button
+              ><button>3DES</button>
+            </div>
+            <div class="seg">
+              <button class="on">加密</button><button>解密</button>
+            </div>
+          </div>
+          <div class="form">
+            <label class="fl"
+              >模式<select>
+                <option>CBC</option>
+                <option>ECB</option>
+                <option>CTR</option>
+                <option>GCM</option>
+              </select></label
+            >
+            <label class="fl"
+              >填充<select>
+                <option>Pkcs7</option>
+                <option>ZeroPadding</option>
+                <option>NoPadding</option>
+              </select></label
+            >
+            <label class="fl"
+              >密钥长度<select>
+                <option>128 位</option>
+                <option>192 位</option>
+                <option>256 位</option>
+              </select></label
+            >
+            <label class="fl"
+              >输出格式<select>
+                <option>Base64</option>
+                <option>Hex</option>
+              </select></label
+            >
+            <label class="fl">密钥 Key<input placeholder="输入密钥" /></label>
+            <label class="fl"
+              >偏移量 IV<input placeholder="ECB 模式无需填写"
+            /></label>
+          </div>
+          <div class="io" data-io="明文 / 密文|处理结果|在此输入内容"></div>
+          <div class="bar">
+            <button class="btn p">
+              <svg class="i"><use href="#lock" /></svg>加密</button
+            ><button class="btn">
+              <svg class="i"><use href="#un" /></svg>解密</button
+            ><button class="btn">
+              <svg class="i"><use href="#trash" /></svg>清空
+            </button>
+          </div>
+        </section>
+
+        <!-- 哈希 -->
+        <section class="panel" id="hash">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#hash-icon" /></svg>
+            </div>
+            <div>
+              <h2>哈希散列</h2>
+              <p>选择算法，一次查看多种摘要，可附加 HMAC 密钥</p>
+            </div>
+          </div>
+          <h3>算法</h3>
+          <div
+            class="chips"
+            data-c="SHA-1,SHA-224,SHA-256*,SHA-384,SHA-512*,SHA3-256,RIPEMD-160,SM3"
+          ></div>
+          <div class="form" style="margin-top: 16px">
+            <label class="fl"
+              >HMAC 密钥（可选）<input placeholder="留空则为普通哈希" /></label
+            ><label class="fl"
+              >输出格式<select>
+                <option>十六进制小写</option>
+                <option>十六进制大写</option>
+                <option>Base64</option>
+              </select></label
+            >
+          </div>
+          <div class="f">
+            <div class="fh"><span>输入内容</span></div>
+            <textarea
+              style="min-height: 110px"
+              placeholder="在此输入要计算的文本"
+            ></textarea>
+          </div>
+          <div class="bar">
+            <button class="btn p">
+              <svg class="i"><use href="#hash-icon" /></svg>计算哈希</button
+            ><button class="btn">
+              <svg class="i"><use href="#trash" /></svg>清空
+            </button>
+          </div>
+          <div class="res">
+            <div class="r">
+              <em>SHA-256</em
+              ><code
+                >e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</code
+              ><button class="mini">
+                <svg class="i"><use href="#copy" /></svg>
+              </button>
+            </div>
+            <div class="r">
+              <em>SHA-512</em
+              ><code
+                >cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e</code
+              ><button class="mini">
+                <svg class="i"><use href="#copy" /></svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- MD5 -->
+        <section class="panel" id="md5">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#shield" /></svg>
+            </div>
+            <div>
+              <h2>MD5</h2>
+              <p>文本摘要，同时给出 16 位与 32 位、大小写结果</p>
+            </div>
+          </div>
+          <div class="top">
+            <div class="seg">
+              <button class="on">文本</button><button>文件</button>
+            </div>
+          </div>
+          <div class="f">
+            <div class="fh"><span>输入内容</span></div>
+            <textarea
+              style="min-height: 120px"
+              placeholder="在此输入要计算的文本"
+            ></textarea>
+          </div>
+          <div class="bar">
+            <button class="btn p">
+              <svg class="i"><use href="#shield" /></svg>计算 MD5</button
+            ><button class="btn">
+              <svg class="i"><use href="#trash" /></svg>清空
+            </button>
+          </div>
+          <div class="res">
+            <div class="r">
+              <em>32 位小写</em><code>d41d8cd98f00b204e9800998ecf8427e</code
+              ><button class="mini">
+                <svg class="i"><use href="#copy" /></svg>
+              </button>
+            </div>
+            <div class="r">
+              <em>32 位大写</em><code>D41D8CD98F00B204E9800998ECF8427E</code
+              ><button class="mini">
+                <svg class="i"><use href="#copy" /></svg>
+              </button>
+            </div>
+            <div class="r">
+              <em>16 位小写</em><code>8f00b204e9800998</code
+              ><button class="mini">
+                <svg class="i"><use href="#copy" /></svg>
+              </button>
+            </div>
+            <div class="r">
+              <em>16 位大写</em><code>8F00B204E9800998</code
+              ><button class="mini">
+                <svg class="i"><use href="#copy" /></svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 时间戳 -->
+        <section class="panel" id="ts">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#clock" /></svg>
+            </div>
+            <div>
+              <h2>时间戳转换</h2>
+              <p>时间戳与日期时间互转，支持秒与毫秒</p>
+            </div>
+          </div>
+          <div class="now">
+            <div><b>当前时间</b><span>2026-11-17 14:32:08</span></div>
+            <div><b>秒</b><span>1794898328</span></div>
+            <div><b>毫秒</b><span>1794898328000</span></div>
+            <div class="grow"></div>
+            <button class="btn">
+              <svg class="i"><use href="#copy" /></svg>复制
+            </button>
+          </div>
+          <div class="two">
+            <div class="box">
+              <h4>时间戳转日期</h4>
+              <div class="row">
+                <input class="in" placeholder="输入时间戳" />
+                <div class="seg">
+                  <button class="on">秒</button><button>毫秒</button>
+                </div>
+              </div>
+              <div class="row">
+                <select class="in">
+                  <option>UTC+8 北京时间</option>
+                  <option>UTC 协调世界时</option>
+                  <option>UTC-5 纽约</option>
+                  <option>UTC+9 东京</option>
+                </select>
+              </div>
+              <div class="row">
+                <input class="in mono" placeholder="转换结果" readonly /><button
+                  class="mini"
+                >
+                  <svg class="i"><use href="#copy" /></svg>
+                </button>
+              </div>
+              <button class="btn p">
+                <svg class="i"><use href="#rf" /></svg>转换
+              </button>
+            </div>
+            <div class="box">
+              <h4>日期转时间戳</h4>
+              <div class="row">
+                <input class="in" type="datetime-local" step="1" />
+              </div>
+              <div class="row">
+                <select class="in">
+                  <option>UTC+8 北京时间</option>
+                  <option>UTC 协调世界时</option>
+                  <option>UTC-5 纽约</option>
+                  <option>UTC+9 东京</option>
+                </select>
+              </div>
+              <div class="row">
+                <input class="in mono" placeholder="秒" readonly /><button
+                  class="mini"
+                >
+                  <svg class="i"><use href="#copy" /></svg>
+                </button>
+              </div>
+              <div class="row">
+                <input class="in mono" placeholder="毫秒" readonly /><button
+                  class="mini"
+                >
+                  <svg class="i"><use href="#copy" /></svg>
+                </button>
+              </div>
+              <button class="btn p">
+                <svg class="i"><use href="#rf" /></svg>转换
+              </button>
+            </div>
+          </div>
+        </section>
+        <section class="panel" id="watermark">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#img" /></svg>
+            </div>
+            <div>
+              <h2>图片加水印</h2>
+              <p>给图片添加文字水印，图片只在本机处理。</p>
+            </div>
+          </div>
+          <div class="drop media-drop" id="watermark-drop">
+            <svg class="i"><use href="#up" /></svg>
+            <b>点击选择、拖入或粘贴图片</b><span>支持多张图片</span>
+          </div>
+          <input
+            id="watermark-files"
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+          />
+          <div class="media-settings">
+            <label class="stack" for="watermark-text"
+              ><span>水印文字</span>
+              <textarea id="watermark-text" maxlength="200" rows="2">
+仅供指定用途</textarea>
+            </label>
+            <div class="form media-fields">
+              <label class="stack"
+                >字体大小（短边 %）<input
+                  class="in"
+                  id="watermark-size"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value="4"
+              /></label>
+              <div class="stack watermark-color">
+                <span id="watermark-color-label">颜色</span>
+                <button
+                  type="button"
+                  class="in watermark-color-trigger"
+                  id="watermark-color-toggle"
+                  aria-labelledby="watermark-color-label watermark-color-value"
+                  aria-controls="watermark-palette"
+                  aria-expanded="false"
+                >
+                  <span class="watermark-swatch"></span
+                  ><span id="watermark-color-value">#000000</span>
+                </button>
+                <div id="watermark-palette" class="watermark-palette" hidden>
+                  <span class="watermark-color-caption">预设颜色</span>
+                  <div
+                    class="watermark-presets"
+                    aria-label="预设颜色"
+                    role="group"
+                  ></div>
+                  <span class="watermark-color-caption">自定义颜色</span>
+                  <div class="watermark-color-plane" aria-hidden="true">
+                    <span></span>
+                  </div>
+                  <label class="stack"
+                    >色相<input
+                      class="watermark-hue"
+                      type="range"
+                      min="0"
+                      max="359"
+                      value="0"
+                      aria-label="色相"
+                  /></label>
+                  <button type="button" class="btn watermark-eyedropper" hidden>
+                    吸管取色
+                  </button>
+                  <div class="watermark-rgb" role="group" aria-label="RGB 颜色">
+                    <label class="stack"
+                      >R<input
+                        class="in mono"
+                        type="number"
+                        min="0"
+                        max="255"
+                        step="1"
+                        value="0"
+                        inputmode="numeric"
+                    /></label>
+                    <label class="stack"
+                      >G<input
+                        class="in mono"
+                        type="number"
+                        min="0"
+                        max="255"
+                        step="1"
+                        value="0"
+                        inputmode="numeric"
+                    /></label>
+                    <label class="stack"
+                      >B<input
+                        class="in mono"
+                        type="number"
+                        min="0"
+                        max="255"
+                        step="1"
+                        value="0"
+                        inputmode="numeric"
+                    /></label>
+                  </div>
+                  <label class="stack"
+                    >HEX 颜色<input
+                      class="in mono"
+                      id="watermark-color"
+                      value="#000000"
+                      maxlength="7"
+                      placeholder="#000000"
+                      spellcheck="false"
+                      autocomplete="off"
+                  /></label>
+                </div>
+              </div>
+              <label class="stack"
+                >不透明度（%）<input
+                  class="in"
+                  id="watermark-opacity"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="5"
+              /></label>
+              <label class="stack"
+                >旋转角度（°）<input
+                  class="in"
+                  id="watermark-angle"
+                  type="number"
+                  min="-90"
+                  max="90"
+                  value="-35"
+              /></label>
+            </div>
+            <div class="media-mode">
+              <div class="seg" data-show="watermark-mode" aria-label="水印布局">
+                <button class="on" data-v="tile">平铺</button
+                ><button data-v="single">单个</button
+                ><button data-v="count">自定数量</button>
+              </div>
+              <label class="stack" id="watermark-mode-tile"
+                >间距（字高倍数）<input
+                  class="in"
+                  id="watermark-gap"
+                  type="number"
+                  min="1"
+                  max="20"
+                  value="5"
+              /></label>
+              <label class="stack hide" id="watermark-mode-single"
+                >位置<select id="watermark-position">
+                  <option value="center">居中</option>
+                  <option value="top-left">左上角</option>
+                  <option value="top-right">右上角</option>
+                  <option value="bottom-left">左下角</option>
+                  <option value="bottom-right">右下角</option>
+                </select></label
+              >
+              <label class="stack hide" id="watermark-mode-count"
+                >水印数量<input
+                  class="in"
+                  id="watermark-count"
+                  type="number"
+                  min="1"
+                  max="40"
+                  value="6"
+              /></label>
+            </div>
+          </div>
+          <div class="media-gallery" id="watermark-gallery"></div>
+          <div class="bar">
+            <button class="btn p" id="watermark-download" disabled>
+              <svg class="i"><use href="#dl" /></svg>打包下载
+            </button>
+            <button class="btn" id="watermark-clear" disabled>
+              <svg class="i"><use href="#trash" /></svg>清空图片
+            </button>
+          </div>
+        </section>
+
+        <section class="panel" id="blind-watermark">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#img" /></svg>
+            </div>
+            <div>
+              <h2>盲水印查看</h2>
+              <p>用左右方向键切换原图、颜色通道和位平面，建议使用原始 PNG。</p>
+            </div>
+          </div>
+          <div class="drop media-drop" id="blind-drop">
+            <svg class="i"><use href="#up" /></svg
+            ><b>点击选择、拖入或粘贴图片</b
+            ><span>支持 PNG、JPG、WebP 等图片</span>
+          </div>
+          <input id="blind-file" type="file" accept="image/*" hidden />
+          <div id="blind-result" hidden>
+            <div class="media-mode media-mode-spaced blind-controls">
+              <button
+                type="button"
+                class="btn"
+                id="blind-prev"
+                aria-label="上一个模式"
+              >
+                ‹
+              </button>
+              <label class="stack"
+                >图像视图<select id="blind-select"></select
+              ></label>
+              <button
+                type="button"
+                class="btn"
+                id="blind-next"
+                aria-label="下一个模式"
+              >
+                ›
+              </button>
+              <output
+                id="blind-mode"
+                class="media-meta"
+                aria-live="polite"
+              ></output>
+              <small class="blind-bit-hint">位数从 0 开始</small>
+            </div>
+            <div class="media-gallery">
+              <div class="media-tile">
+                <div
+                  class="media-preview image-zoom-preview"
+                  tabindex="0"
+                  aria-label="图片预览，滚轮或加减键缩放，放大后拖动，双击还原"
+                >
+                  <img id="blind-original" alt="原图" />
+                  <canvas
+                    id="blind-plane"
+                    aria-label="当前模式的图片"
+                    hidden
+                  ></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="bar">
+              <button class="btn p" id="blind-download" disabled>
+                <svg class="i"><use href="#dl" /></svg>下载当前结果</button
+              ><button class="btn" id="blind-clear">
+                <svg class="i"><use href="#trash" /></svg>清空
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="animated-qr">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#qr" /></svg>
+            </div>
+            <div>
+              <h2>动态二维码传输</h2>
+              <p>把文件拆成连续二维码，用另一台设备扫码还原。文件不上传。</p>
+            </div>
+          </div>
+          <div class="seg" data-show="qr-mode" aria-label="传输方式">
+            <button class="on" data-v="send">发送文件</button
+            ><button data-v="receive">接收文件</button>
+          </div>
+          <div class="media-settings" id="qr-mode-send">
+            <div class="drop media-drop" id="qr-send-drop">
+              <svg class="i"><use href="#up" /></svg
+              ><b>选择或拖入要发送的文件</b><span>适合小文件，最大 2 MB</span>
+            </div>
+            <input id="qr-send-file" type="file" hidden />
+            <p id="qr-send-info" class="media-meta" role="status"></p>
+            <img id="qr-preview" alt="正在播放的传输二维码" hidden />
+            <div class="media-actions">
+              <button class="btn p" id="qr-play" disabled>开始播放</button>
+              <label class="stack"
+                >每帧停留（毫秒）<input
+                  class="in"
+                  id="qr-interval"
+                  type="number"
+                  min="120"
+                  max="2000"
+                  value="350"
+              /></label>
+              <output id="qr-send-progress" class="media-meta"></output>
+            </div>
+          </div>
+          <div class="media-settings hide" id="qr-mode-receive">
+            <div class="media-actions">
+              <button class="btn p" id="qr-camera">打开摄像头</button
+              ><button class="btn" id="qr-clear">重置接收</button>
+            </div>
+            <video
+              id="qr-video"
+              muted
+              playsinline
+              autoplay
+              hidden
+              aria-label="摄像头预览"
+            ></video>
+            <div class="drop media-drop" id="qr-receive-drop">
+              <svg class="i"><use href="#up" /></svg><b>或选择二维码图片</b
+              ><span>可以一次选多张，也可以继续补扫缺少的帧</span>
+            </div>
+            <input
+              id="qr-receive-files"
+              type="file"
+              accept="image/*"
+              multiple
+              hidden
+            />
+            <output id="qr-receive-info" class="media-meta" role="status"
+              >等待接收二维码</output
+            >
+            <button class="btn p" id="qr-download" hidden>
+              <svg class="i"><use href="#dl" /></svg>下载文件
+            </button>
+          </div>
+        </section>
+        <footer class="site-footer">
+          Copyright © 2026
+          <a href="https://github.com/Qwerto107">Qwerto107</a> ·
+          <a href="https://github.com/Qwerto107/QKit">QKit</a>. All rights reserved.
+        </footer>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
