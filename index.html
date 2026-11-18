@@ -306,96 +306,101 @@
               诗词密码由公开诗句按固定规则提取，存在一定规律。可在结果基础上自行调整几位，或加入只有自己知道的字符。
             </div>
           </div>
-          <h3 style="margin-top: 20px">生成规则</h3>
-          <div class="top" style="margin-bottom: 0">
+          <p id="poetry-load-status" class="poetry-empty" role="status">
+            正在加载诗词……
+          </p>
+          <div id="poetry-controls" inert>
+            <h3 style="margin-top: 20px">生成规则</h3>
+            <div class="top" style="margin-bottom: 0">
+              <div
+                class="chips poem-options"
+                data-c="首字母大写*,使用符号*,数字替换*,英文词替换"
+              ></div>
+              <label class="cnt"
+                >每批数量
+                <div class="step">
+                  <button>
+                    <svg class="i"><use href="#minus" /></svg></button
+                  ><input
+                    id="poem-count"
+                    value="8"
+                    min="1"
+                    max="50"
+                    inputmode="numeric"
+                    aria-label="诗词每批数量"
+                  /><button>
+                    <svg class="i"><use href="#plus" /></svg>
+                  </button></div
+              ></label>
+            </div>
             <div
-              class="chips poem-options"
-              data-c="首字母大写*,使用符号*,数字替换*,英文词替换"
-            ></div>
-            <label class="cnt"
-              >每批数量
-              <div class="step">
-                <button>
-                  <svg class="i"><use href="#minus" /></svg></button
-                ><input
-                  id="poem-count"
-                  value="8"
-                  min="1"
-                  max="50"
-                  inputmode="numeric"
-                  aria-label="诗词每批数量"
-                /><button>
-                  <svg class="i"><use href="#plus" /></svg>
-                </button></div
-            ></label>
-          </div>
-          <div
-            class="poem-length"
-            role="group"
-            aria-labelledby="poem-length-label"
-          >
-            <div class="poem-length-heading">
-              <div class="poem-length-title">
-                <b id="poem-length-label">诗句字数</b>
-                <button
-                  type="button"
-                  class="poem-length-reset"
-                  id="poem-reset-length"
-                  title="恢复默认 12～18 字"
-                  aria-label="重置诗句字数为 12～18 字"
+              class="poem-length"
+              role="group"
+              aria-labelledby="poem-length-label"
+            >
+              <div class="poem-length-heading">
+                <div class="poem-length-title">
+                  <b id="poem-length-label">诗句字数</b>
+                  <button
+                    type="button"
+                    class="poem-length-reset"
+                    id="poem-reset-length"
+                    title="恢复默认 12～18 字"
+                    aria-label="重置诗句字数为 12～18 字"
+                  >
+                    重置
+                  </button>
+                </div>
+                <span
+                  ><output
+                    id="poem-length-value"
+                    for="poem-min-length poem-max-length"
+                    >12–18</output
+                  >
+                  字</span
                 >
-                  重置
-                </button>
               </div>
-              <span
-                ><output
-                  id="poem-length-value"
-                  for="poem-min-length poem-max-length"
-                  >12–18</output
-                >
-                字</span
-              >
+              <div class="poem-range">
+                <input
+                  id="poem-min-length"
+                  type="range"
+                  min="6"
+                  max="32"
+                  value="12"
+                  aria-label="最短诗句字数"
+                />
+                <input
+                  id="poem-max-length"
+                  type="range"
+                  min="6"
+                  max="32"
+                  value="18"
+                  aria-label="最长诗句字数"
+                />
+              </div>
             </div>
-            <div class="poem-range">
-              <input
-                id="poem-min-length"
-                type="range"
-                min="6"
-                max="32"
-                value="12"
-                aria-label="最短诗句字数"
-              />
-              <input
-                id="poem-max-length"
-                type="range"
-                min="6"
-                max="32"
-                value="18"
-                aria-label="最长诗句字数"
-              />
+            <div class="bar">
+              <button id="generate-poetry" class="btn p">
+                <svg class="i"><use href="#rf" /></svg>换一批</button
+              ><button class="btn">
+                <svg class="i"><use href="#copy" /></svg>复制全部</button
+              ><button class="btn">
+                <svg class="i"><use href="#trash" /></svg>清空
+              </button>
+              <button class="btn" id="poem-save-config">保存配置</button>
+              <button class="btn" id="poem-reset-config">重置配置</button>
             </div>
+            <p class="hint">
+              <svg class="i" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4M12 8h.01" /></svg
+              >悬停或点击线索，联动高亮中文与密码片段，帮助记忆
+            </p>
+            <p id="poetry-empty" class="poetry-empty" hidden>
+              暂无结果，点击“换一批”生成。
+            </p>
+            <div class="pg" id="pg" aria-live="polite"></div>
           </div>
-          <div class="bar">
-            <button id="generate-poetry" class="btn p">
-              <svg class="i"><use href="#rf" /></svg>换一批</button
-            ><button class="btn">
-              <svg class="i"><use href="#copy" /></svg>复制全部</button
-            ><button class="btn">
-              <svg class="i"><use href="#trash" /></svg>清空
-            </button>
-            <button class="btn" id="poem-save-config">保存配置</button>
-            <button class="btn" id="poem-reset-config">重置配置</button>
-          </div>
-          <p class="hint">
-            <svg class="i" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" /></svg
-            >悬停或点击线索，联动高亮中文与密码片段，帮助记忆
-          </p>
-          <p id="poetry-empty" class="poetry-empty" hidden>
-            暂无结果，点击“换一批”生成。
-          </p>
-          <div class="pg" id="pg" aria-live="polite"></div>
         </section>
 
         <!-- Base64 -->

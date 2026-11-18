@@ -6,6 +6,18 @@ import poetry from "../src/data/poetry.json" with { type: "json" };
 import { buildPoetryPassword, filterPoetry } from "../src/tools/poetry.js";
 
 const tick = () => new Promise((resolve) => setImmediate(resolve));
+const waitForPoetry = (window) => {
+  const status = window.document.querySelector("#poetry-load-status");
+  return new Promise((resolve, reject) => {
+    const observer = new window.MutationObserver(() => {
+      observer.disconnect();
+      if (status.hidden) resolve();
+      else reject(new Error(status.textContent));
+    });
+    if (status.hidden) resolve();
+    else observer.observe(status, { attributes: true, childList: true });
+  });
+};
 
 test("完整页面的路由、配色、密码限制、下拉及诗词联动正确", async (t) => {
   const html = await readFile(
@@ -206,7 +218,11 @@ test("完整页面的路由、配色、密码限制、下拉及诗词联动正�
   assert.equal(length.value, "24");
   assert.equal(length.closest(".rg").querySelector(".step input").value, "24");
 
+  assert.equal($("#poetry-controls").hasAttribute("inert"), true);
+  assert.equal($$(".poetry-item").length, 0);
   $("#nav-poem").click();
+  await waitForPoetry(window);
+  assert.equal($("#poetry-controls").hasAttribute("inert"), false);
   assert.equal(window.location.pathname, "/poetry");
   assert.equal($("#poem").classList.contains("on"), true);
   assert.equal($("#nav-poem").getAttribute("aria-current"), "page");
@@ -548,6 +564,7 @@ test("完整页面的路由、配色、密码限制、下拉及诗词联动正�
     reloaded.window.addEventListener.bind(reloaded.window),
   );
   await import("../src/main.js?poetry-config-reload");
+  await waitForPoetry(reloaded.window);
   const restored = (selector) =>
     reloaded.window.document.querySelector(selector);
   assert.equal(restored("#poem-min-length").value, "25");

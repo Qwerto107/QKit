@@ -4,7 +4,6 @@ import { initCodecs } from "./tools/codecs.js";
 import { initCipher } from "./tools/cipher.js";
 import { initHashes } from "./tools/hashes.js";
 import { initTimestamp } from "./tools/timestamp.js";
-import { initPoetry } from "./tools/poetry.js";
 import { initWatermark } from "./tools/watermark.js";
 import { initBlindWatermark } from "./tools/blind-watermark.js";
 import { initAnimatedQr } from "./tools/animated-qr.js";
@@ -203,6 +202,20 @@ $("#nav").innerHTML = TOOLS.map(
 $$(".panel").forEach((panel) =>
   panel.setAttribute("aria-labelledby", `nav-${panel.id}`),
 );
+let poetryLoad;
+function loadPoetry() {
+  // 首次进入时才下载词库；重复切换路由不重复初始化或覆盖结果。
+  poetryLoad ??= import("./tools/poetry.js")
+    .then(({ initPoetry }) => {
+      initPoetry();
+      $("#poetry-controls").removeAttribute("inert");
+      $("#poetry-load-status").hidden = true;
+    })
+    .catch(() => {
+      $("#poetry-load-status").textContent = "诗词加载失败，请刷新页面重试。";
+    });
+}
+
 function showTool(id, revealNav = true) {
   if (!$(`#${id}.panel`)) return;
   $$(".tb").forEach((button) => {
@@ -218,6 +231,7 @@ function showTool(id, revealNav = true) {
     if (wasActive && !active) panel.dispatchEvent(new Event("toolhide"));
   });
   document.title = `${modules.find((item) => item[0] === id)[2]} · QKit`;
+  if (id === "poem") loadPoetry();
   if (revealNav && matchMedia("(max-width:820px)").matches) {
     $(`#nav-${id}`).scrollIntoView({
       inline: "nearest",
@@ -339,7 +353,6 @@ initCodecs();
 initCipher();
 initHashes();
 initTimestamp();
-initPoetry();
 initWatermark();
 initBlindWatermark();
 initAnimatedQr();
