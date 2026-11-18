@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createCipheriv, createHash, createHmac } from "node:crypto";
-import { generatePasswords } from "../src/tools/password.js";
+import { balancePasswordMinimums, generatePasswords } from "../src/tools/password.js";
 import {
   encodeText,
   decodeText,
@@ -66,6 +66,32 @@ test("密码满足长度、数量、配额、去重及易混淆字符规则", ()
     assert.ok((value.match(/[a-z]/g) || []).length >= 4);
     assert.ok((value.match(/[A-Z]/g) || []).length >= 4);
     assert.ok((value.match(/[!?+#$%&]/g) || []).length >= 1);
+  }
+});
+
+test("均分把容量不足的配额分给其他类别，并支持重叠的自定义字符", () => {
+  const balanced = { ...passwordConfig, length: 32, count: 4 };
+  const minimums = balancePasswordMinimums(balanced);
+  assert.deepEqual(minimums, [8, 9, 8, 7, 0]);
+  for (const [, value] of generatePasswords({ ...balanced, minimums })) {
+    assert.equal(new Set(value).size, 32);
+    assert.equal(value.match(/\d/g).length, 8);
+    assert.equal(value.match(/[a-z]/g).length, 9);
+    assert.equal(value.match(/[A-Z]/g).length, 8);
+    assert.equal(value.match(/[!?+#$%&]/g).length, 7);
+  }
+  const overlap = {
+    ...balanced,
+    characters: [true, true, false, false, false, false, false, true],
+    length: 17,
+    custom: "2",
+  };
+  overlap.minimums = balancePasswordMinimums(overlap);
+  assert.deepEqual(overlap.minimums, [7, 9, 0, 0, 1]);
+  for (const [, value] of generatePasswords(overlap)) {
+    assert.equal(new Set(value).size, 17);
+    assert.match(value, /2/);
+    assert.equal(value.match(/\d/g).length, 8);
   }
 });
 
@@ -139,6 +165,21 @@ test("排除后的可用字符必须满足数量和去重规则", () => {
     assert.equal((password.match(/\d/g) || []).length, 6);
     assert.doesNotMatch(password, /[23]/);
   }
+});
+
+test("关闭排除时保留配置但生成密码可以使用这些字符", () => {
+  const config = {
+    ...passwordConfig,
+    characters: [false, false, false, false, false, false, false, true],
+    custom: "abcd",
+    excluded: "a",
+    minimums: [0, 0, 0, 0, 0],
+    length: 4,
+    count: 1,
+  };
+  assert.throws(() => generatePasswords({ ...config, excludeSpecified: true }), /仅有 3 个/);
+  const [[, password]] = generatePasswords({ ...config, excludeSpecified: false });
+  assert.equal([...password].sort().join(""), "abcd");
 });
 
 test("八种哈希及 HMAC 与 Node 独立实现一致", async () => {

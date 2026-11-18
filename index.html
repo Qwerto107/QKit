@@ -215,10 +215,10 @@
             <h3 style="margin-top: 22px">安全选项</h3>
             <div
               class="chips"
-              data-c="不重复字符*,排除易混淆字符*,启用最少字符数量*"
+              data-c="不重复字符*,排除易混淆字符*,启用最少字符数量*,排除指定字符"
             ></div>
-            <label class="fl excluded-characters"
-              >排除指定字符
+            <label class="fl excluded-characters" id="password-exclusion" hidden
+              >要排除的字符
               <input
                 id="password-excluded"
                 placeholder="输入不希望出现的字符，区分大小写"
@@ -227,29 +227,35 @@
                 spellcheck="false"
               />
             </label>
+            <div class="password-minimum-header">
+              <h3>最少字符数量</h3>
+              <button type="button" id="password-balance">一键均分</button>
+            </div>
             <div
               class="sc-row"
               data-s="数字:6,小写字母:4,大写字母:4,符号:1,自定义:0"
             ></div>
             <h3 style="margin-top: 22px">生成设置</h3>
-            <div class="rg">
-              <b>密码长度</b><input type="range" min="4" max="64" value="24" />
-              <div class="step" data-lk>
-                <button>
-                  <svg class="i"><use href="#minus" /></svg></button
-                ><input value="24" /><button>
-                  <svg class="i"><use href="#plus" /></svg>
-                </button>
+            <div class="password-ranges">
+              <div class="rg">
+                <b>密码长度</b><input type="range" min="4" max="64" value="24" />
+                <div class="step" data-lk>
+                  <button>
+                    <svg class="i"><use href="#minus" /></svg></button
+                  ><input value="24" /><button>
+                    <svg class="i"><use href="#plus" /></svg>
+                  </button>
+                </div>
               </div>
-            </div>
-            <div class="rg">
-              <b>生成数量</b><input type="range" min="1" max="50" value="10" />
-              <div class="step" data-lk>
-                <button>
-                  <svg class="i"><use href="#minus" /></svg></button
-                ><input value="10" /><button>
-                  <svg class="i"><use href="#plus" /></svg>
-                </button>
+              <div class="rg">
+                <b>生成数量</b><input type="range" min="1" max="50" value="12" />
+                <div class="step" data-lk>
+                  <button>
+                    <svg class="i"><use href="#minus" /></svg></button
+                  ><input value="12" /><button>
+                    <svg class="i"><use href="#plus" /></svg>
+                  </button>
+                </div>
               </div>
             </div>
             <div class="bar">
@@ -259,28 +265,7 @@
               <button class="btn">
                 <svg class="i"><use href="#trash" /></svg>清空结果
               </button>
-              <button class="btn">保存配置</button
-              ><button class="btn">重置配置</button>
-            </div>
-            <div class="res">
-              <div class="r">
-                <em>强度 很高</em><code>Kp7#xR2mQ9vL4zTe8NwB5hYc</code
-                ><button class="mini">
-                  <svg class="i"><use href="#copy" /></svg>
-                </button>
-              </div>
-              <div class="r">
-                <em>强度 很高</em><code>f3Hs9Vd2?Ub6Jx7Ga1Zk8Rq4</code
-                ><button class="mini">
-                  <svg class="i"><use href="#copy" /></svg>
-                </button>
-              </div>
-              <div class="r">
-                <em>强度 很高</em><code>Wm5Te8Yp3&amp;Cn2Lf9Xs6Dh1Ab</code
-                ><button class="mini">
-                  <svg class="i"><use href="#copy" /></svg>
-                </button>
-              </div>
+              <button class="btn">重置配置</button>
             </div>
           </div>
         </section>
