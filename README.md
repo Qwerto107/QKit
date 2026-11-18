@@ -57,6 +57,7 @@
 | 正则测试 | `/regex` | 支持 JavaScript、PHP（PCRE2）和 Go（RE2）语法，高亮匹配并查看捕获组 |
 | 进制 / 颜色 | `/convert` | 转换整数进制及 HEX、RGB、HSL 颜色 |
 | Cron 解析 | `/cron` | 校验表达式，按选定时区预览执行时间 |
+| Nginx 配置生成器 | `/nginx` | 生成静态站点、SPA 和反向代理配置，支持复制和下载 `.conf` |
 
 ## 快速部署
 

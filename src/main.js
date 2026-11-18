@@ -9,6 +9,7 @@ import { initBlindWatermark } from "./tools/blind-watermark.js";
 import { initAnimatedQr } from "./tools/animated-qr.js";
 import { initAvatars } from "./tools/avatars.js";
 import { initDevelopers } from "./tools/developers.js";
+import { initNginx } from "./tools/nginx.js";
 import { initCustomSelects } from "./components/custom-select.js";
 
 const TOOLS = [
@@ -54,6 +55,7 @@ const TOOLS = [
       ["diff", "swap", "文本 Diff", "/diff"],
       ["regex", "hash-icon", "正则测试", "/regex"],
       ["convert", "rf", "进制 / 颜色", "/convert"],
+      ["nginx", "box", "Nginx 配置", "/nginx"],
     ],
   ],
   [
@@ -381,6 +383,7 @@ initBlindWatermark();
 initAnimatedQr();
 initAvatars();
 initDevelopers();
+initNginx();
 initCustomSelects();
 // History 路由支持独立模块地址；兼容此前分享的 #pwd 等旧链接。
 const resolveRoute = () =>

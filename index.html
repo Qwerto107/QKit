@@ -1355,6 +1355,43 @@
           </div>
         </section>
 
+        <section class="panel" id="nginx">
+          <div class="ph">
+            <div class="t">
+              <svg class="i" aria-hidden="true"><use href="#box" /></svg>
+            </div>
+            <div>
+              <h2>Nginx 配置生成器</h2>
+              <p>生成可放在 <code>http</code> 块中的 <code>server</code> 配置。</p>
+            </div>
+          </div>
+          <form class="form">
+            <label class="fl">配置模板<select name="mode">
+              <option value="static">静态站点</option>
+              <option value="spa">SPA（单页应用）</option>
+              <option value="proxy">反向代理</option>
+            </select></label>
+            <label class="fl">域名<input class="in mono" name="name" value="example.com" maxlength="253" spellcheck="false" /></label>
+            <label class="fl">监听端口<input class="in mono" name="port" value="80" inputmode="numeric" maxlength="5" /></label>
+            <label class="fl" data-nginx-root>站点目录<input class="in mono" name="root" value="/var/www/site" maxlength="1024" spellcheck="false" /></label>
+            <label class="fl" data-nginx-upstream hidden>上游源地址<input class="in mono" name="upstream" value="http://127.0.0.1:3000" maxlength="512" spellcheck="false" /></label>
+            <label class="fl" data-nginx-ca hidden>上游 CA 证书路径<input class="in mono" name="certificate" value="/etc/ssl/certs/ca-certificates.crt" maxlength="1024" spellcheck="false" /></label>
+          </form>
+          <p class="hint" data-status role="status"></p>
+          <label class="f">
+            <span class="fh">Nginx 配置</span>
+            <textarea class="mono" data-nginx-config aria-label="Nginx 配置" rows="16" readonly></textarea>
+          </label>
+          <div class="bar">
+            <button type="button" class="btn p" data-nginx-copy>
+              <svg class="i" aria-hidden="true"><use href="#copy" /></svg>复制配置
+            </button>
+            <button type="button" class="btn" data-nginx-download>
+              <svg class="i" aria-hidden="true"><use href="#dl" /></svg>下载 .conf
+            </button>
+          </div>
+        </section>
+
         <section class="panel" id="cron">
           <div class="ph">
             <div class="t">
