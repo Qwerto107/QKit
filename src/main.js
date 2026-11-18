@@ -7,6 +7,7 @@ import { initTimestamp } from "./tools/timestamp.js";
 import { initWatermark } from "./tools/watermark.js";
 import { initBlindWatermark } from "./tools/blind-watermark.js";
 import { initAnimatedQr } from "./tools/animated-qr.js";
+import { initAvatars } from "./tools/avatars.js";
 import { initDevelopers } from "./tools/developers.js";
 import { initCustomSelects } from "./components/custom-select.js";
 
@@ -41,6 +42,8 @@ const TOOLS = [
       ["blind-watermark", "img", "盲水印查看", "/blind-watermark"],
       ["qrcode", "qr", "二维码", "/qrcode"],
       ["animated-qr", "qr", "动态二维码传输", "/animated-qr"],
+      ["ugly-avatar", "img", "丑丑头像生成", "/ugly-avatar"],
+      ["simple-avatar", "img", "简单头像生成", "/simple-avatar"],
     ],
   ],
   [
@@ -248,6 +251,7 @@ function showTool(id, revealNav = true) {
     const active = panel.id === id;
     panel.classList.toggle("on", active);
     if (wasActive && !active) panel.dispatchEvent(new Event("toolhide"));
+    if (!wasActive && active) panel.dispatchEvent(new Event("toolshow"));
   });
   document.title = `${modules.find((item) => item[0] === id)[2]} · QKit`;
   if (id === "poem") loadPoetry();
@@ -375,6 +379,7 @@ initTimestamp();
 initWatermark();
 initBlindWatermark();
 initAnimatedQr();
+initAvatars();
 initDevelopers();
 initCustomSelects();
 // History 路由支持独立模块地址；兼容此前分享的 #pwd 等旧链接。

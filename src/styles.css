@@ -129,13 +129,16 @@ button {
   font-size: 11px;
   text-align: center;
 }
-.site-footer a {
+.site-footer a,
+.avatar-credit a {
   color: inherit;
   text-decoration: none;
 }
 .site-footer a:hover,
-.site-footer a:focus-visible {
-  color: var(--ac);
+.site-footer a:focus-visible,
+.avatar-credit a:hover,
+.avatar-credit a:focus-visible {
+  color: var(--tx);
 }
 header {
   display: flex;
@@ -1603,6 +1606,47 @@ input[type="range"]::-moz-range-thumb {
   margin: 16px 0 0;
   color: var(--mu);
   font-size: 12px;
+}
+.avatar-workbench {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding-top: 4px;
+}
+.avatar-stage {
+  display: grid;
+  place-items: center;
+  width: min(100%, 256px);
+  aspect-ratio: 1;
+  background: var(--fld);
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.avatar-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.avatar-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.avatar-actions .btn {
+  padding-inline: 12px;
+}
+.avatar-credit,
+.avatar-status {
+  margin: 0;
+  color: var(--mu);
+  font-size: 12px;
+  text-align: center;
+}
+.avatar-credit a {
+  font-weight: 600;
 }
 #regex [data-regex-supported-flags] {
   margin: -6px 0 14px;

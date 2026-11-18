@@ -741,6 +741,67 @@
             </div>
           </div>
         </section>
+        <section class="panel" id="ugly-avatar">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#img" /></svg>
+            </div>
+            <div>
+              <h2>丑丑头像生成</h2>
+              <p>随机生成手绘头像。</p>
+            </div>
+          </div>
+          <div class="avatar-workbench">
+            <div class="avatar-stage">
+              <img class="avatar-preview" data-avatar-preview alt="随机生成的手绘头像" width="500" height="500" hidden />
+              <span class="avatar-status" role="status">正在生成头像…</span>
+            </div>
+            <div class="avatar-actions">
+              <button type="button" class="btn p" data-avatar-randomize>
+                <svg class="i" aria-hidden="true"><use href="#rf" /></svg><span>换一个</span>
+              </button>
+              <button type="button" class="btn" data-avatar-download disabled>
+                <svg class="i" aria-hidden="true"><use href="#dl" /></svg>下载 PNG
+              </button>
+            </div>
+            <p class="avatar-credit">
+              基于 <a href="https://github.com/txstc55/ugly-avatar" target="_blank" rel="noopener noreferrer">Xuan Tang 的 Ugly Avatar</a> 改编 · <a href="/ugly-avatar-license.txt" target="_blank" rel="noopener">CC BY-NC 4.0</a>
+            </p>
+          </div>
+        </section>
+
+        <section class="panel" id="simple-avatar">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#img" /></svg>
+            </div>
+            <div>
+              <h2>简单头像生成</h2>
+              <p>随机搭配几何图形和配色。</p>
+            </div>
+          </div>
+          <div class="avatar-workbench">
+            <div class="avatar-stage">
+              <img class="avatar-preview" data-avatar-preview alt="随机生成的极简头像" width="256" height="256" hidden />
+              <span class="avatar-status" role="status">正在生成头像…</span>
+            </div>
+            <div class="avatar-actions">
+              <button type="button" class="btn p" data-avatar-randomize>
+                <svg class="i" aria-hidden="true"><use href="#rf" /></svg><span>换一个</span>
+              </button>
+              <button type="button" class="btn" data-avatar-download disabled>
+                <svg class="i" aria-hidden="true"><use href="#dl" /></svg>下载 PNG
+              </button>
+              <button type="button" class="btn" data-avatar-svg disabled>
+                <svg class="i" aria-hidden="true"><use href="#dl" /></svg>下载 SVG
+              </button>
+            </div>
+            <p class="avatar-credit">
+              基于 <a href="https://tools.qwerto.cc/simple-avatar/" target="_blank" rel="noopener noreferrer">Xuan Tang 的 Simple Avatar</a> 改编
+            </p>
+          </div>
+        </section>
+
         <section class="panel" id="watermark">
           <div class="ph">
             <div class="t">
@@ -1331,7 +1392,8 @@
         <footer class="site-footer">
           Copyright © 2026
           <a href="https://github.com/Qwerto107">Qwerto107</a> ·
-          <a href="https://github.com/Qwerto107/QKit">QKit</a>. All rights reserved.
+          <a href="https://github.com/Qwerto107/QKit">QKit</a>. All rights
+          reserved.
         </footer>
       </main>
     </div>
