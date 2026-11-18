@@ -260,6 +260,24 @@ export function initPoetry() {
     panel,
   );
   const results = $("#pg");
+  const layoutCards = () => {
+    if (!results.clientWidth) return;
+    const staggered = results.clientWidth >= 2 * 360 + 14;
+    // 每张卡按实际高度占据连续网格轨道，两列独立向下排。
+    if (staggered) {
+      const spans = [...results.children].map((card) =>
+        Math.ceil((card.offsetHeight + 14) / 2),
+      );
+      spans.forEach((span, index) => {
+        results.children[index].style.gridRowEnd = `span ${span}`;
+      });
+    } else {
+      for (const card of results.children) card.style.gridRowEnd = "";
+    }
+    results.classList.toggle("poetry-staggered", staggered);
+  };
+  const observer =
+    typeof ResizeObserver === "function" ? new ResizeObserver(layoutCards) : null;
   const empty = $("#poetry-empty");
   const minimum = $("#poem-min-length");
   const maximum = $("#poem-max-length");
@@ -293,15 +311,25 @@ export function initPoetry() {
     );
     if (!candidates.length) throw new Error("本地词库没有更多诗句");
     entries[index] = makeEntry(candidates[randomIndex(candidates.length)]);
-    card.replaceWith(
-      poetryCard(entries[index], index, replace, candidates.length > 0),
-    );
+    const next = poetryCard(entries[index], index, replace, candidates.length > 0);
+    observer?.unobserve(card);
+    card.replaceWith(next);
+    if (observer) {
+      observer.observe(next);
+      layoutCards();
+    }
   };
   const render = () => {
     const canReplace = available.length > entries.length;
     results.replaceChildren(
       ...entries.map((entry, i) => poetryCard(entry, i, replace, canReplace)),
     );
+    if (observer) {
+      observer.disconnect();
+      observer.observe(results);
+      for (const card of results.children) observer.observe(card);
+      layoutCards();
+    }
     empty.hidden = entries.length > 0;
     copyAll.disabled = clear.disabled = !entries.length;
   };

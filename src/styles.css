@@ -1540,6 +1540,17 @@ input[type="range"]::-moz-range-thumb {
   gap: 14px;
   margin-top: 12px;
 }
+.pg.poetry-staggered {
+  grid-auto-rows: 2px;
+  grid-auto-flow: row dense;
+  row-gap: 0;
+}
+.poetry-staggered > .pc:nth-child(odd) {
+  grid-column: 1;
+}
+.poetry-staggered > .pc:nth-child(even) {
+  grid-column: 2;
+}
 .pc {
   display: flex;
   flex-direction: column;
