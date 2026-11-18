@@ -764,6 +764,22 @@ input[type="range"]::-moz-range-thumb {
   font-size: 11px;
   min-width: 54px;
 }
+.res .id-copy-row {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--bd);
+  text-align: left;
+  cursor: copy;
+}
+.res .id-copy-row em {
+  min-width: 2ch;
+}
+.res .id-copy-row .i {
+  color: var(--mu);
+}
+.res .id-copy-row:focus-visible {
+  outline-offset: -2px;
+}
 .mini {
   border: 0;
   background: transparent;
@@ -1151,7 +1167,8 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 0 0 1px #0009;
   pointer-events: none;
 }
-.watermark-palette .watermark-hue {
+.watermark-palette .watermark-hue,
+.conversion-palette .watermark-hue {
   height: 10px;
   background: linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red);
   cursor: pointer;
@@ -1172,8 +1189,21 @@ input[type="range"]::-moz-range-thumb {
   outline: 2px solid var(--ac);
   outline-offset: 1px;
 }
-.watermark-palette .in {
+.watermark-palette .in,
+.conversion-palette .in {
   width: 100%;
+}
+.conversion-palette {
+  display: grid;
+  gap: 10px;
+  width: min(100%, 420px);
+  padding: 14px;
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  background: var(--card);
+}
+.conversion-palette .watermark-color-plane {
+  height: 160px;
 }
 .watermark-color-caption {
   color: var(--tx);
@@ -1242,6 +1272,47 @@ input[type="range"]::-moz-range-thumb {
 }
 #qr-video {
   background: #000;
+}
+.qr-still-preview {
+  width: min(100%, 320px);
+  height: auto;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  background: #fff;
+  image-rendering: pixelated;
+}
+.dev-preview {
+  max-height: 420px;
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  background: var(--fld);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.dev-preview mark {
+  background: var(--soft);
+  color: var(--ac);
+  border-bottom: 1px solid currentColor;
+}
+.dev-preview .diff-added {
+  background: oklch(0.6 0.19 145 / 0.2);
+}
+.dev-preview .diff-removed {
+  background: oklch(0.6 0.2 25 / 0.2);
+}
+#regex [data-regex-groups] code {
+  white-space: pre-wrap;
+}
+.dev-swatch {
+  width: 84px;
+  height: 44px;
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+}
+.panel [data-status]:empty {
+  display: none;
 }
 .hide {
   display: none !important;
@@ -1532,6 +1603,9 @@ input[type="range"]::-moz-range-thumb {
   margin: 16px 0 0;
   color: var(--mu);
   font-size: 12px;
+}
+#regex [data-regex-supported-flags] {
+  margin: -6px 0 14px;
 }
 .pg {
   display: grid;

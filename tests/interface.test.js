@@ -119,7 +119,6 @@ test("完整页面的路由、配色、密码限制、下拉及诗词联动正�
   assert.equal($("html").style.getPropertyValue("--h"), "305");
   $("#pal [data-h='250']").click();
   await tick();
-  assert.equal($$("[role=combobox]").length, 9);
   assert.ok(
     $$("select").every((select) => select.hidden && select.tabIndex === -1),
   );

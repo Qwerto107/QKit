@@ -7,6 +7,7 @@ import { initTimestamp } from "./tools/timestamp.js";
 import { initWatermark } from "./tools/watermark.js";
 import { initBlindWatermark } from "./tools/blind-watermark.js";
 import { initAnimatedQr } from "./tools/animated-qr.js";
+import { initDevelopers } from "./tools/developers.js";
 import { initCustomSelects } from "./components/custom-select.js";
 
 const TOOLS = [
@@ -15,6 +16,7 @@ const TOOLS = [
     [
       ["pwd", "key", "随机密码", "/password"],
       ["poem", "book", "诗词密码", "/poetry"],
+      ["ids", "hash-icon", "UUID / ULID", "/uuid-ulid"],
     ],
   ],
   [
@@ -37,10 +39,27 @@ const TOOLS = [
     [
       ["watermark", "img", "图片加水印", "/watermark"],
       ["blind-watermark", "img", "盲水印查看", "/blind-watermark"],
+      ["qrcode", "qr", "二维码", "/qrcode"],
       ["animated-qr", "qr", "动态二维码传输", "/animated-qr"],
     ],
   ],
-  ["时间", [["ts", "clock", "时间戳", "/timestamp"]]],
+  [
+    "开发工具",
+    [
+      ["json", "box", "JSON 格式化", "/json"],
+      ["jwt", "shield", "JWT 解码", "/jwt"],
+      ["diff", "swap", "文本 Diff", "/diff"],
+      ["regex", "hash-icon", "正则测试", "/regex"],
+      ["convert", "rf", "进制 / 颜色", "/convert"],
+    ],
+  ],
+  [
+    "时间",
+    [
+      ["ts", "clock", "时间戳", "/timestamp"],
+      ["cron", "clock", "Cron 解析", "/cron"],
+    ],
+  ],
 ];
 const modules = TOOLS.flatMap(([, tools]) => tools);
 
@@ -356,6 +375,7 @@ initTimestamp();
 initWatermark();
 initBlindWatermark();
 initAnimatedQr();
+initDevelopers();
 initCustomSelects();
 // History 路由支持独立模块地址；兼容此前分享的 #pwd 等旧链接。
 const resolveRoute = () =>

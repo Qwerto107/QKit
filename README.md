@@ -47,6 +47,14 @@
 | 盲水印查看 | `/blind-watermark` | 查看颜色通道和低三位的位平面，可下载处理结果 |
 | 动态二维码传输 | `/animated-qr` | 将小文件分帧播放，可用摄像头接收或导入二维码图片 |
 | 时间戳 | `/timestamp` | 日期、时间戳与固定时区偏移互转 |
+| JSON 格式化 | `/json` | 格式化、压缩和校验 JSON |
+| JWT 解码 | `/jwt` | 查看 Header、Payload 和过期时间；不验证签名 |
+| UUID / ULID | `/uuid-ulid` | 批量生成 UUID v4 或 ULID |
+| 二维码 | `/qrcode` | 生成文本二维码，下载 PNG 或识别本地图片 |
+| 文本 Diff | `/diff` | 按行对比文本，高亮新增和删除 |
+| 正则测试 | `/regex` | 支持 JavaScript、PHP（PCRE2）和 Go（RE2）语法，高亮匹配并查看捕获组 |
+| 进制 / 颜色 | `/convert` | 转换整数进制及 HEX、RGB、HSL 颜色 |
+| Cron 解析 | `/cron` | 校验表达式，按选定时区预览执行时间 |
 
 ## 快速部署
 

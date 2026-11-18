@@ -791,72 +791,11 @@
                   <span class="watermark-swatch"></span
                   ><span id="watermark-color-value">#000000</span>
                 </button>
-                <div id="watermark-palette" class="watermark-palette" hidden>
-                  <span class="watermark-color-caption">预设颜色</span>
-                  <div
-                    class="watermark-presets"
-                    aria-label="预设颜色"
-                    role="group"
-                  ></div>
-                  <span class="watermark-color-caption">自定义颜色</span>
-                  <div class="watermark-color-plane" aria-hidden="true">
-                    <span></span>
-                  </div>
-                  <label class="stack"
-                    >色相<input
-                      class="watermark-hue"
-                      type="range"
-                      min="0"
-                      max="359"
-                      value="0"
-                      aria-label="色相"
-                  /></label>
-                  <button type="button" class="btn watermark-eyedropper" hidden>
-                    吸管取色
-                  </button>
-                  <div class="watermark-rgb" role="group" aria-label="RGB 颜色">
-                    <label class="stack"
-                      >R<input
-                        class="in mono"
-                        type="number"
-                        min="0"
-                        max="255"
-                        step="1"
-                        value="0"
-                        inputmode="numeric"
-                    /></label>
-                    <label class="stack"
-                      >G<input
-                        class="in mono"
-                        type="number"
-                        min="0"
-                        max="255"
-                        step="1"
-                        value="0"
-                        inputmode="numeric"
-                    /></label>
-                    <label class="stack"
-                      >B<input
-                        class="in mono"
-                        type="number"
-                        min="0"
-                        max="255"
-                        step="1"
-                        value="0"
-                        inputmode="numeric"
-                    /></label>
-                  </div>
-                  <label class="stack"
-                    >HEX 颜色<input
-                      class="in mono"
-                      id="watermark-color"
-                      value="#000000"
-                      maxlength="7"
-                      placeholder="#000000"
-                      spellcheck="false"
-                      autocomplete="off"
-                  /></label>
-                </div>
+                <div
+                  id="watermark-palette"
+                  class="watermark-palette"
+                  hidden
+                ></div>
               </div>
               <label class="stack"
                 >不透明度（%）<input
@@ -1061,6 +1000,334 @@
             </button>
           </div>
         </section>
+        <section class="panel" id="json">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#box" /></svg>
+            </div>
+            <div>
+              <h2>JSON 格式化 / 校验</h2>
+              <p>美化、压缩或检查 JSON 语法</p>
+            </div>
+          </div>
+          <p class="top">
+            <label class="fl"
+              >缩进
+              <select data-json-indent>
+                <option value="2">2 个空格</option>
+                <option value="4">4 个空格</option>
+                <option value="tab">Tab</option>
+              </select>
+            </label>
+          </p>
+          <div class="io" data-io="输入 JSON|转换结果|粘贴要处理的 JSON"></div>
+          <div class="bar">
+            <button class="btn p" data-json-format>格式化</button>
+            <button class="btn" data-json-minify>压缩</button>
+            <button class="btn" data-json-validate>校验</button>
+          </div>
+          <p class="hint" data-status role="status"></p>
+        </section>
+
+        <section class="panel" id="jwt">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#shield" /></svg>
+            </div>
+            <div>
+              <h2>JWT 解码</h2>
+              <p>查看 Header、Payload 和时间声明；不验证签名。</p>
+            </div>
+          </div>
+          <label class="f"
+            ><span class="fh">JWT</span>
+            <textarea data-jwt-token placeholder="粘贴三段式 JWT"></textarea>
+          </label>
+          <div class="bar">
+            <button class="btn p" data-jwt-decode>解码</button>
+          </div>
+          <p class="hint" data-status role="status"></p>
+          <div data-jwt-result hidden>
+            <div class="two">
+              <label class="f"
+                ><span class="fh">Header</span
+                ><textarea data-jwt-header readonly></textarea>
+              </label>
+              <label class="f"
+                ><span class="fh">Payload</span
+                ><textarea data-jwt-payload readonly></textarea>
+              </label>
+            </div>
+            <div class="res" data-jwt-time></div>
+          </div>
+        </section>
+
+        <section class="panel" id="ids">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#hash-icon" /></svg>
+            </div>
+            <div>
+              <h2>UUID / ULID 生成</h2>
+              <p>批量生成 UUID v4 或带毫秒时间戳的 ULID</p>
+            </div>
+          </div>
+          <div class="form">
+            <label class="fl"
+              >标识类型<select data-id-type>
+                <option value="uuid">UUID v4</option>
+                <option value="ulid">ULID</option>
+              </select></label
+            >
+            <label class="fl"
+              >生成数量<input
+                class="in"
+                data-id-count
+                type="number"
+                min="1"
+                max="100"
+                value="10"
+            /></label>
+          </div>
+          <div class="bar">
+            <button class="btn p" data-id-generate>生成</button
+            ><button class="btn" data-id-copy>复制全部</button>
+          </div>
+          <div class="res" data-id-results hidden></div>
+        </section>
+
+        <section class="panel" id="qrcode">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#qr" /></svg>
+            </div>
+            <div>
+              <h2>二维码生成 / 识别</h2>
+              <p>把文本或链接转成二维码，或从本地图片识别内容。</p>
+            </div>
+          </div>
+          <div class="seg" data-show="qrcode-mode" aria-label="二维码操作">
+            <button class="on" data-v="generate">生成</button
+            ><button data-v="scan">识别</button>
+          </div>
+          <div class="media-settings" id="qrcode-mode-generate">
+            <label class="f"
+              ><span class="fh">二维码内容</span
+              ><textarea
+                data-qrcode-input
+                placeholder="输入文字或链接"
+              ></textarea>
+            </label>
+            <div class="media-actions">
+              <button class="btn p" data-qrcode-make>生成二维码</button
+              ><button class="btn" data-qrcode-download disabled>
+                下载 PNG
+              </button>
+            </div>
+            <img
+              class="qr-still-preview"
+              data-qrcode-image
+              alt="生成的二维码"
+              hidden
+            />
+          </div>
+          <div class="media-settings hide" id="qrcode-mode-scan">
+            <div class="drop media-drop" data-qrcode-drop>
+              <svg class="i"><use href="#up" /></svg
+              ><b>选择、拖入或粘贴二维码图片</b>
+            </div>
+            <input
+              data-qrcode-file
+              type="file"
+              accept="image/*"
+              aria-label="选择二维码图片"
+              hidden
+            />
+            <p class="hint" data-status role="status"></p>
+            <label class="f" data-qrcode-result hidden
+              ><span class="fh">识别结果</span><textarea readonly></textarea>
+            </label>
+            <button class="btn" data-qrcode-copy disabled>复制结果</button>
+          </div>
+        </section>
+
+        <section class="panel" id="diff">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#swap" /></svg>
+            </div>
+            <div>
+              <h2>文本 Diff</h2>
+              <p>逐行比较两份文本，标出添加、删除和未改动的行。</p>
+            </div>
+          </div>
+          <div class="two">
+            <label class="f"
+              ><span class="fh">原始文本</span
+              ><textarea data-diff-before></textarea>
+            </label>
+            <label class="f"
+              ><span class="fh">修改后文本</span
+              ><textarea data-diff-after></textarea>
+            </label>
+          </div>
+          <div class="bar">
+            <button class="btn p" data-diff-compare>比较</button
+            ><button class="btn" data-diff-copy>复制差异</button>
+          </div>
+          <p class="hint" data-status role="status"></p>
+          <pre
+            class="dev-preview mono"
+            data-diff-output
+            hidden
+            aria-label="差异结果"
+          ></pre>
+        </section>
+
+        <section class="panel" id="regex">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#hash-icon" /></svg>
+            </div>
+            <div>
+              <h2>正则测试</h2>
+              <p>按所选语法匹配文本，展示捕获组和命名组。</p>
+            </div>
+          </div>
+          <div class="form">
+            <label class="fl"
+              >正则语法<select data-regex-syntax>
+                <option value="javascript">JavaScript（ECMAScript）</option>
+                <option value="pcre2">PHP（PCRE2）</option>
+                <option value="re2">Go（RE2）</option>
+              </select></label
+            >
+            <label class="fl"
+              >正则表达式<input
+                class="in mono"
+                data-regex-pattern
+                placeholder="(?&lt;word&gt;\w+)"
+                maxlength="5000"
+                spellcheck="false"
+            /></label>
+            <label class="fl"
+              >标志<input
+                class="in mono"
+                data-regex-flags
+                value="g"
+                placeholder="如 gim"
+                maxlength="9"
+                spellcheck="false"
+            /></label>
+          </div>
+          <p class="hint" data-regex-supported-flags></p>
+          <label class="f"
+            ><span class="fh">测试文本</span
+            ><textarea data-regex-text></textarea>
+          </label>
+          <div class="bar">
+            <button class="btn p" data-regex-run>测试匹配</button>
+          </div>
+          <p class="hint" data-status role="status"></p>
+          <pre
+            class="dev-preview mono"
+            data-regex-preview
+            hidden
+            aria-label="高亮结果"
+          ></pre>
+          <div class="res" data-regex-groups hidden></div>
+        </section>
+
+        <section class="panel" id="convert">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#rf" /></svg>
+            </div>
+            <div>
+              <h2>进制 / 颜色转换</h2>
+              <p>整数的 2 / 8 / 10 / 16 进制互转，或换算 HEX、RGB、HSL。</p>
+            </div>
+          </div>
+          <div class="seg" data-show="convert-mode" aria-label="转换类型">
+            <button class="on" data-v="radix">进制</button
+            ><button data-v="color">颜色</button>
+          </div>
+          <div class="media-settings" id="convert-mode-radix">
+            <div class="form">
+              <label class="fl"
+                >输入进制<select data-radix-base>
+                  <option value="2">二进制</option>
+                  <option value="8">八进制</option>
+                  <option value="10" selected>十进制</option>
+                  <option value="16">十六进制</option>
+                </select></label
+              >
+              <label class="fl"
+                >整数<input
+                  class="in mono"
+                  data-radix-input
+                  placeholder="255"
+                  spellcheck="false"
+              /></label>
+            </div>
+            <button class="btn p" data-radix-run>转换进制</button>
+            <div class="res" data-radix-results hidden></div>
+          </div>
+          <div class="media-settings hide" id="convert-mode-color">
+            <label class="fl"
+              >颜色值<input
+                class="in mono"
+                data-color-input
+                placeholder="#3b82f6、rgb(59, 130, 246) 或 hsl(217, 91%, 60%)"
+                spellcheck="false"
+            /></label>
+            <button class="btn p" data-color-run>转换颜色</button>
+            <div class="conversion-palette" data-conversion-palette></div>
+            <div
+              class="dev-swatch"
+              data-color-swatch
+              hidden
+              aria-label="颜色预览"
+              role="img"
+            ></div>
+            <div class="res" data-color-results hidden></div>
+          </div>
+        </section>
+
+        <section class="panel" id="cron">
+          <div class="ph">
+            <div class="t">
+              <svg class="i"><use href="#clock" /></svg>
+            </div>
+            <div>
+              <h2>Cron 表达式解析</h2>
+              <p>校验标准 5 字段或含秒的 6 字段表达式，预览下次执行时间。</p>
+            </div>
+          </div>
+          <div class="form">
+            <label class="fl"
+              >Cron 表达式<input
+                class="in mono"
+                data-cron-expression
+                value="*/15 * * * *"
+                spellcheck="false"
+            /></label>
+            <label class="fl"
+              >时区<input
+                class="in mono"
+                data-cron-zone
+                value="Asia/Shanghai"
+                placeholder="Asia/Shanghai 或 UTC"
+                spellcheck="false"
+            /></label>
+          </div>
+          <div class="bar">
+            <button class="btn p" data-cron-run>解析表达式</button>
+          </div>
+          <p class="hint" data-status role="status"></p>
+          <div class="res" data-cron-results hidden></div>
+        </section>
+
         <footer class="site-footer">
           Copyright © 2026
           <a href="https://github.com/Qwerto107">Qwerto107</a> ·
@@ -1069,6 +1336,68 @@
       </main>
     </div>
 
+    <template id="color-picker-fields">
+      <span class="watermark-color-caption">预设颜色</span>
+      <div class="watermark-presets" aria-label="预设颜色" role="group"></div>
+      <span class="watermark-color-caption">自定义颜色</span>
+      <div class="watermark-color-plane" aria-hidden="true">
+        <span></span>
+      </div>
+      <label class="stack"
+        >色相<input
+          class="watermark-hue"
+          type="range"
+          min="0"
+          max="359"
+          value="0"
+          aria-label="色相"
+      /></label>
+      <button type="button" class="btn watermark-eyedropper" hidden>
+        吸管取色
+      </button>
+      <div class="watermark-rgb" role="group" aria-label="RGB 颜色">
+        <label class="stack"
+          >R<input
+            class="in mono"
+            type="number"
+            min="0"
+            max="255"
+            step="1"
+            value="0"
+            inputmode="numeric"
+        /></label>
+        <label class="stack"
+          >G<input
+            class="in mono"
+            type="number"
+            min="0"
+            max="255"
+            step="1"
+            value="0"
+            inputmode="numeric"
+        /></label>
+        <label class="stack"
+          >B<input
+            class="in mono"
+            type="number"
+            min="0"
+            max="255"
+            step="1"
+            value="0"
+            inputmode="numeric"
+        /></label>
+      </div>
+      <label class="stack"
+        >HEX 颜色<input
+          class="in mono"
+          data-picker-hex
+          value="#000000"
+          maxlength="7"
+          placeholder="#000000"
+          spellcheck="false"
+          autocomplete="off"
+      /></label>
+    </template>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
