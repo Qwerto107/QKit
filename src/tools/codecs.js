@@ -6,6 +6,7 @@ import {
   bindFileDrop,
   copy,
   download,
+  icon,
   notify,
 } from "../dom.js";
 
@@ -61,26 +62,86 @@ export function convertUrl(text, decode, fullUrl) {
   }
 }
 
+function urlQuery(text) {
+  const source = text.trim().split("#", 1)[0];
+  const separator = source.indexOf("?");
+  const hasPath = /^(?:[a-z][a-z\d+.-]*:\/\/|\/|\.\.?\/)/i.test(source);
+  // 裸参数的值也可能含有问号，例如 next=/search?q=term。
+  const hasQuerySeparator =
+    separator >= 0 && !/[=&]/.test(source.slice(0, separator));
+  if (hasPath || hasQuerySeparator)
+    return separator < 0 ? "" : source.slice(separator + 1);
+  return /[=&]/.test(source) ? source : null;
+}
+
+export function parseUrlParameters(text) {
+  // 优先按原始分隔符拆分，避免把参数值内解码出的 & 或 # 当作分隔符。
+  let query = urlQuery(text);
+  if (query === null && /%3[fd]/i.test(text)) {
+    // 整体编码的 URL 要先还原一层，才能找到原本的查询分隔符。
+    try {
+      query = urlQuery(decodeURIComponent(text));
+    } catch {
+      return [];
+    }
+  }
+  return [...new URLSearchParams(`?${query ?? ""}`)];
+}
+
 export function initCodecs() {
   const urlPanel = $("#url");
-  const urlFields = $$("textarea", urlPanel);
+  const [urlInput, urlOutput] = $$("textarea", urlPanel);
   const urlMode = $(".seg", urlPanel);
   const [urlEncode, urlDecode, urlClear] = $$(".bar button", urlPanel);
+  const urlParametersSection = $(".url-parameters", urlPanel);
+  const urlParameters = $("[data-url-parameters]", urlPanel);
+  const updateUrlParameters = () => {
+    const parameters = parseUrlParameters(urlInput.value);
+    const rows = document.createDocumentFragment();
+    for (const [key, value] of parameters) {
+      const row = document.createElement("tr");
+      const name = row.insertCell();
+      name.className = key ? "mono" : "url-parameter-empty";
+      name.textContent = key || "空键名";
+
+      const cell = document.createElement("div");
+      cell.className = "url-parameter-value";
+      const text = document.createElement("code");
+      text.className = value ? "mono" : "url-parameter-empty";
+      text.textContent = value || "空值";
+      cell.append(text);
+      if (value) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "mini";
+        button.setAttribute("aria-label", key ? `复制参数值 ${key}` : "复制参数值");
+        button.innerHTML = icon("copy");
+        button.onclick = () => act(button, () => copy(value));
+        cell.append(button);
+      }
+      row.insertCell().append(cell);
+      rows.append(row);
+    }
+    urlParameters.replaceChildren(rows);
+    urlParametersSection.hidden = parameters.length === 0;
+  };
+  urlInput.addEventListener("input", updateUrlParameters);
   const convertUrlInput = (button, decode) =>
     act(button, () => {
-      urlFields[1].value = convertUrl(
-        urlFields[0].value,
+      urlOutput.value = convertUrl(
+        urlInput.value,
         decode,
         activeIndex(urlMode) === 1,
       );
+      updateUrlParameters();
       notify("转换完成");
     });
   urlEncode.onclick = () => convertUrlInput(urlEncode, false);
   urlDecode.onclick = () => convertUrlInput(urlDecode, true);
-  urlClear.onclick = () =>
-    urlFields.forEach((field) => {
-      field.value = "";
-    });
+  urlClear.onclick = () => {
+    urlInput.value = urlOutput.value = "";
+    updateUrlParameters();
+  };
 
   const panel = $("#b64");
   const textMode = $(".seg", panel);

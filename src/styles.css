@@ -933,6 +933,66 @@ input[type="range"]::-moz-range-thumb {
     "Microsoft YaHei",
     monospace;
 }
+.io[data-sync-height] {
+  align-items: start;
+}
+[data-sync-height] .f textarea {
+  flex: none;
+}
+.url-parameters {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bd);
+}
+.url-parameters h3 {
+  margin: 0;
+}
+.url-parameters-table {
+  width: 100%;
+  margin-top: 10px;
+  table-layout: fixed;
+  border: 1px solid var(--bd);
+  border-spacing: 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.url-parameters-table th,
+.url-parameters-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--bd);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.url-parameters-table th {
+  background: var(--fld);
+  color: var(--mu);
+  font-size: 12px;
+  font-weight: 600;
+}
+.url-parameters-table th:first-child {
+  width: 30%;
+}
+.url-parameters-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.url-parameter-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+}
+.url-parameter-value code {
+  min-width: 0;
+  white-space: pre-wrap;
+}
+.url-parameter-value .mini {
+  flex: none;
+}
+.url-parameter-empty {
+  color: var(--mu);
+  font-size: 12px;
+}
 .sw {
   align-self: center;
   width: 34px;

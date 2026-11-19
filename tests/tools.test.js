@@ -8,6 +8,7 @@ import {
   decodeText,
   base64ToBytes,
   convertUrl,
+  parseUrlParameters,
 } from "../src/tools/codecs.js";
 import { hashText, md5Results } from "../src/tools/hashes.js";
 import { transformCipher } from "../src/tools/cipher.js";
@@ -45,6 +46,32 @@ test("URL 两种模式正确处理保留字符，并拒绝损坏的转义", () =
   assert.equal(convertUrl("%2F", true, true), "%2F");
   assert.equal(convertUrl("%2F", true, false), "/");
   assert.throws(() => convertUrl("%E0%A4", true, false));
+});
+
+test("解析 URL 查询参数时保留重复键、空值和已编码的分隔符", () => {
+  assert.deepEqual(
+    parseUrlParameters("https://example.com/search?q=%E4%BD%A0%E5%A5%BD+QKit&tag=1&empty=&tag=2&flag#tag=3"),
+    [["q", "你好 QKit"], ["tag", "1"], ["empty", ""], ["tag", "2"], ["flag", ""]],
+  );
+  assert.deepEqual(parseUrlParameters("next=/search?q=a%26b&literal=%2B"), [
+    ["next", "/search?q=a&b"],
+    ["literal", "+"],
+  ]);
+  assert.deepEqual(parseUrlParameters("/search?__proto__=one&__proto__=two"), [
+    ["__proto__", "one"],
+    ["__proto__", "two"],
+  ]);
+  assert.deepEqual(parseUrlParameters("https://example.com/file=a#?x=1"), []);
+  assert.deepEqual(parseUrlParameters("普通文本"), []);
+});
+
+test("参数解析保留原始参数边界，并能独立识别整体编码的输入", () => {
+  const url = "https://example.com/?q=a%26b%23c&tag=x";
+  const rows = [["q", "a&b#c"], ["tag", "x"]];
+  assert.deepEqual(parseUrlParameters(url), rows);
+  assert.deepEqual(parseUrlParameters(encodeURIComponent(url)), rows);
+  assert.deepEqual(parseUrlParameters("q%3Da%2526b%26tag%3Dx"), [["q", "a&b"], ["tag", "x"]]);
+  assert.deepEqual(parseUrlParameters("q%3D%FF"), []);
 });
 
 const passwordConfig = {

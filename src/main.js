@@ -98,15 +98,31 @@ $$("[data-io]").forEach((container) => {
     container.dataset.io.split("|");
   container.innerHTML = `<div class="f"><div class="fh"><span>${inputLabel}</span><button class="mini" aria-label="清空输入">${icon("trash")}</button></div><textarea placeholder="${placeholder}" aria-label="${inputLabel}" spellcheck="false"></textarea></div><button class="sw" aria-label="交换输入与输出">${icon("swap")}</button><div class="f"><div class="fh"><span>${outputLabel}</span><button class="mini" aria-label="复制结果">${icon("copy")}</button></div><textarea readonly placeholder="结果将显示在这里" aria-label="${outputLabel}"></textarea></div>`;
   const [source, target] = $$("textarea", container);
+  if (container.hasAttribute("data-sync-height")) {
+    // 原生尺寸抓手写入内联高度，任一侧变化时同步给另一侧。
+    const syncHeight = new MutationObserver((changes) => {
+      const resized = changes.at(-1).target;
+      const other = resized === source ? target : source;
+      if (other.style.height !== resized.style.height)
+        other.style.height = resized.style.height;
+    });
+    for (const field of [source, target]) {
+      syncHeight.observe(field, { attributes: true, attributeFilter: ["style"] });
+    }
+  }
   const [clearButton, copyButton] = $$(".mini", container);
+  const refreshSource = () => {
+    source.dispatchEvent(new Event("input"));
+    source.focus();
+  };
   clearButton.onclick = () => {
     source.value = "";
-    source.focus();
+    refreshSource();
   };
   copyButton.onclick = () => act(copyButton, () => copy(target.value));
   $(".sw", container).onclick = () => {
     [source.value, target.value] = [target.value, source.value];
-    source.focus();
+    refreshSource();
   };
 });
 

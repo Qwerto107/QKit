@@ -452,7 +452,7 @@
             </div>
             <div>
               <h2>URL 编解码</h2>
-              <p>处理链接与参数中的特殊字符</p>
+              <p>处理链接与参数中的特殊字符，或解析查询参数</p>
             </div>
           </div>
           <div class="top">
@@ -462,6 +462,7 @@
           </div>
           <div
             class="io"
+            data-sync-height
             data-io="原始内容|转换结果|https://example.com/search?q=你好 世界"
           ></div>
           <div class="bar">
@@ -473,6 +474,15 @@
               <svg class="i"><use href="#trash" /></svg>清空
             </button>
           </div>
+          <section class="url-parameters" aria-labelledby="url-parameters-title" hidden>
+            <h3 id="url-parameters-title">查询参数</h3>
+            <table class="url-parameters-table" aria-labelledby="url-parameters-title">
+              <thead>
+                <tr><th scope="col">参数名</th><th scope="col">参数值</th></tr>
+              </thead>
+              <tbody data-url-parameters></tbody>
+            </table>
+          </section>
         </section>
 
         <!-- AES/DES -->

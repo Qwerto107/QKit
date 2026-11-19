@@ -167,6 +167,24 @@ test("完整页面的路由、配色、密码限制、下拉及诗词联动正�
   $("#ts .box .btn").click();
   assert.equal($("#ts .box input[readonly]").value, "1970-01-01 09:00:00");
 
+  $("#nav-url").click();
+  const [urlInput, urlOutput] = $$("#url textarea");
+  const urlParameters = $("#url .url-parameters");
+  const urlRows = () => $$("#url tbody tr").map((row) => [
+    row.cells[0].textContent,
+    row.cells[1].querySelector("code").textContent,
+  ]);
+  assert.equal(urlParameters.hidden, true);
+  type(urlInput, "https://example.com/?tag=1&tag=2&empty=");
+  assert.deepEqual(urlRows(), [["tag", "1"], ["tag", "2"], ["empty", "空值"]]);
+  assert.equal(urlParameters.hidden, false);
+  assert.equal(urlOutput.value, "");
+  urlOutput.value = "?q=a%26b";
+  $("#url .sw").click();
+  assert.deepEqual(urlRows(), [["q", "a&b"]]);
+  $("#url .io .mini").click();
+  assert.equal(urlParameters.hidden, true);
+
   $("#nav-pwd").click();
   assert.equal(window.location.pathname, "/password");
   assert.equal($$("#pwd .password-item").length, 12);
