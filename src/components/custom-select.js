@@ -13,7 +13,7 @@ export function initCustomSelects() {
 
   $$("select").forEach((select, index) => {
     const prefix = `qkit-select-${index}`;
-    const label = select.closest("label");
+    const label = select.labels[0];
     const labelText = label
       ? [...label.childNodes]
           .filter((node) => node.nodeType === 3)

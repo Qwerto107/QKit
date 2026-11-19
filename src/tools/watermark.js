@@ -1,4 +1,4 @@
-import { $, activeIndex, download, icon, notify } from "../dom.js";
+import { $, act, activeIndex, download, icon, notify } from "../dom.js";
 import { initColorPicker } from "../components/color-picker.js";
 import {
   bindLocalFiles,
@@ -7,6 +7,45 @@ import {
   numberField,
   openBitmap,
 } from "./media.js";
+
+const WATERMARK_FONTS = {
+  system: "system-ui, sans-serif",
+  sans: '"PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif',
+  serif: '"Songti SC", SimSun, "Noto Serif CJK SC", "Noto Serif SC", serif',
+  kai: '"Kaiti SC", KaiTi, STKaiti, serif',
+  fangsong: '"FangSong SC", FangSong, STFangsong, serif',
+  mono: '"Cascadia Mono", Consolas, Menlo, "Liberation Mono", monospace',
+};
+
+function bindLocalFonts(select) {
+  if (typeof window.queryLocalFonts !== "function") return;
+  const load = $("#watermark-load-fonts");
+  load.hidden = false;
+  load.onclick = () => act(load, async () => {
+    let fonts;
+    try {
+      fonts = await window.queryLocalFonts();
+    } catch (error) {
+      throw new Error(
+        error.name === "NotAllowedError" ? "浏览器未授权访问本机字体" : "无法读取本机字体",
+      );
+    }
+    // 只使用字体族名，去掉同一字体的不同字重、斜体等重复项。
+    const families = [...new Set(fonts.map(({ family }) => family).filter(Boolean))]
+      .sort((left, right) => left.localeCompare(right));
+    if (!families.length) throw new Error("未读取到本机字体");
+
+    const group = document.createElement("optgroup");
+    group.label = "本机字体";
+    for (const family of families) group.append(new Option(family, `local:${family}`));
+    select.append(group);
+    load.hidden = true;
+    if (!select.closest(".panel").classList.contains("on")) return;
+    const trigger = $(".custom-select-trigger", select.parentElement);
+    trigger.focus();
+    trigger.click();
+  });
+}
 
 function wrapText(ctx, text, maxWidth) {
   return text.split(/\r?\n/).flatMap((paragraph) => {
@@ -70,8 +109,9 @@ export function drawWatermark(canvas, image, options, scale = 1) {
 
   const shortEdge = Math.min(width, height);
   let size = Math.max(1, (shortEdge * options.size) / 100);
+  const font = options.fontFamily ?? WATERMARK_FONTS.system;
   const setFont = () => {
-    ctx.font = `600 ${size}px system-ui, sans-serif`;
+    ctx.font = `600 ${size}px ${font}`;
   };
   setFont();
   const lines = wrapText(ctx, options.text.trim(), width * 0.75);
@@ -173,6 +213,8 @@ export function initWatermark() {
   const gallery = $("#watermark-gallery");
   const settings = $("#watermark .media-settings");
   const layout = $("#watermark .seg");
+  const font = $("#watermark-font");
+  bindLocalFonts(font);
   const clear = $("#watermark-clear");
   const batch = $("#watermark-download");
   const getColor = initWatermarkColor(settings);
@@ -182,6 +224,9 @@ export function initWatermark() {
   let redraw;
   const currentOptions = () => ({
     text: $("#watermark-text").value,
+    fontFamily: font.value.startsWith("local:")
+      ? `"${CSS.escape(font.value.slice(6))}", ${WATERMARK_FONTS.system}`
+      : WATERMARK_FONTS[font.value] ?? WATERMARK_FONTS.system,
     color: getColor(),
     size: numberField("watermark-size"),
     angle: numberField("watermark-angle"),

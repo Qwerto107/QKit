@@ -1171,6 +1171,26 @@ input[type="range"]::-moz-range-thumb {
   position: relative;
   min-width: 0;
 }
+.watermark-font-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+#watermark-load-fonts {
+  padding: 0 2px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ac);
+  font-size: 11px;
+}
+#watermark-load-fonts:hover:enabled {
+  background: var(--soft);
+}
+#watermark-load-fonts:disabled {
+  opacity: 0.55;
+}
 .watermark-color-trigger {
   display: flex;
   align-items: center;
