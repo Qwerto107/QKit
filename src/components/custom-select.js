@@ -28,6 +28,8 @@ export function initCustomSelects() {
     trigger.className = "custom-select-trigger";
     trigger.setAttribute("role", "combobox");
     trigger.setAttribute("aria-label", labelText);
+    const description = select.getAttribute("aria-describedby");
+    if (description) trigger.setAttribute("aria-describedby", description);
     trigger.setAttribute("aria-haspopup", "listbox");
     trigger.setAttribute("aria-controls", `${prefix}-menu`);
     trigger.setAttribute("aria-expanded", "false");

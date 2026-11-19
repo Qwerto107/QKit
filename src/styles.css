@@ -931,7 +931,8 @@ input[type="range"]::-moz-range-thumb {
   resize: vertical;
 }
 .f textarea,
-.json-highlight {
+.json-highlight,
+.nginx-highlight {
   padding: 8px 14px 12px;
   font:
     12.5px/1.6 ui-monospace,
@@ -947,18 +948,22 @@ input[type="range"]::-moz-range-thumb {
 [data-sync-height] .f textarea {
   flex: none;
 }
-.json-result-editor {
+.json-result-editor,
+.nginx-config-editor {
   position: relative;
   display: grid;
   min-width: 0;
 }
 .json-result-editor textarea,
-.json-highlight {
+.json-highlight,
+.nginx-config-editor textarea,
+.nginx-highlight {
   white-space: pre-wrap;
   overflow-wrap: break-word;
   font-variant-ligatures: none;
 }
-.json-highlight {
+.json-highlight,
+.nginx-highlight {
   position: absolute;
   inset: 0 auto auto 0;
   margin: 0;
@@ -966,11 +971,13 @@ input[type="range"]::-moz-range-thumb {
   pointer-events: none;
   color: var(--tx);
 }
-.json-highlight:not([hidden]) + textarea {
+.json-highlight:not([hidden]) + textarea,
+.nginx-highlight:not([hidden]) + textarea {
   position: relative;
   color: transparent;
 }
-.json-highlight:not([hidden]) + textarea::selection {
+.json-highlight:not([hidden]) + textarea::selection,
+.nginx-highlight:not([hidden]) + textarea::selection {
   background: color-mix(in oklch, var(--ac) 30%, transparent);
   color: transparent;
 }
@@ -979,6 +986,11 @@ input[type="range"]::-moz-range-thumb {
 .json-level-2 { color: light-dark(#146e60, #79cfb6); }
 .json-level-3 { color: light-dark(#7047a8, #c6a2ff); }
 .json-level-4 { color: light-dark(#9d3e63, #ef98bd); }
+.nginx-highlight::after { content: "\200b"; }
+.nginx-token-directive { color: var(--ac); }
+.nginx-token-variable { color: light-dark(#7047a8, #c6a2ff); }
+.nginx-token-string { color: light-dark(#146e60, #79cfb6); }
+.nginx-token-comment { color: var(--mu); }
 .json-diagnostic {
   --json-error-color: light-dark(#9b2937, #ffabb6);
   margin-top: 16px;
@@ -1834,6 +1846,228 @@ input[type="range"]::-moz-range-thumb {
 }
 .regex-options details .chips {
   margin-top: 7px;
+}
+.nginx-settings {
+  margin-bottom: 14px;
+}
+.nginx-group {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.nginx-group + .nginx-group {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bd);
+}
+.nginx-group h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.nginx-group .form,
+.nginx-fold .form {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+}
+.nginx-group .form {
+  margin: 0;
+}
+.nginx-group .nginx-basic-fields {
+  grid-template-columns: minmax(0, 1fr) minmax(90px, 8rem);
+}
+.nginx-group .form:not(:has(> :not([hidden]))),
+.nginx-fold .form:not(:has(> :not([hidden]))) {
+  display: none;
+}
+.nginx-group .hint {
+  margin: 0;
+}
+.nginx-route-list {
+  display: grid;
+  gap: 12px;
+}
+.nginx-location {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.nginx-location + .nginx-location {
+  padding-top: 12px;
+  border-top: 1px solid var(--bd);
+}
+.nginx-add-location {
+  justify-self: start;
+}
+.nginx-remove-location {
+  justify-self: end;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--mu);
+  font-size: 12px;
+}
+.nginx-remove-location:hover {
+  color: var(--ac);
+}
+.nginx-group + .nginx-fold {
+  margin-top: 14px;
+}
+.nginx-fold + .nginx-fold {
+  margin-top: 8px;
+}
+.nginx-fold {
+  min-width: 0;
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+}
+.nginx-fold > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 9px;
+  list-style: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.nginx-fold > summary::-webkit-details-marker {
+  display: none;
+}
+.nginx-fold > summary::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-right: 3px;
+  border-right: 1px solid var(--mu);
+  border-bottom: 1px solid var(--mu);
+  transform: translateY(-2px) rotate(45deg);
+}
+.nginx-fold[open] > summary,
+.nginx-fold > summary:hover {
+  background: var(--fld);
+}
+.nginx-fold[open] > summary::after {
+  transform: translateY(2px) rotate(225deg);
+}
+.nginx-fold > :not(summary) {
+  margin: 10px 12px;
+}
+.nginx-cors-options,
+.nginx-bot-options,
+.nginx-compression-group {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.nginx-cors-options fieldset,
+.nginx-bot-options fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.nginx-cors-options legend,
+.nginx-bot-options legend {
+  margin-bottom: 5px;
+  padding: 0;
+  color: var(--mu);
+  font-size: 12px;
+}
+.nginx-cors-options .hint,
+.nginx-bot-options .hint,
+.nginx-compression-group :is(.form, .hint) {
+  margin: 0;
+}
+.nginx-compression-group h4 {
+  margin: 0;
+  font-size: 12px;
+}
+.nginx-compression-group + .nginx-compression-group,
+.nginx-compression-group + .chips {
+  padding-top: 10px;
+  border-top: 1px solid var(--bd);
+}
+.nginx-subsettings {
+  padding-top: 9px;
+  border-top: 1px solid var(--bd);
+}
+.nginx-subsettings summary {
+  width: fit-content;
+  color: var(--mu);
+  font-size: 12px;
+  cursor: pointer;
+}
+.nginx-subsettings .form,
+.nginx-subsettings .hint {
+  margin: 8px 0 0;
+}
+.nginx-subsettings .chips {
+  margin-top: 10px;
+}
+.nginx-hsts-age {
+  max-width: 20rem;
+}
+.nginx-wide-field {
+  grid-column: 1 / -1;
+}
+.nginx-wide-field textarea {
+  resize: vertical;
+}
+.nginx-result-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bd);
+}
+.nginx-result-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.nginx-result-header .bar {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.nginx-log-variables {
+  font-size: 12px;
+  color: var(--mu);
+}
+.nginx-log-variables summary {
+  width: fit-content;
+  color: var(--ac);
+  cursor: pointer;
+}
+.nginx-log-variables a {
+  color: var(--ac);
+  text-decoration: none;
+}
+.nginx-log-variables a:hover {
+  color: var(--tx);
+}
+.nginx-variable-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 14px;
+  margin: 10px 0;
+}
+.nginx-variable-groups h4 {
+  margin: 0 0 5px;
+  color: var(--tx);
+}
+.nginx-variable-groups dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 8px;
+  margin: 0;
+}
+.nginx-variable-groups dd {
+  margin: 0;
 }
 .pg {
   display: grid;

@@ -51,4 +51,26 @@ DES、3DES、MD5 和 SHA-1 用于处理已有格式。新的加密用途优先�
 | 进制转换 | 转换有符号整数的二、八、十、十六进制。 |
 | 颜色转换 | 拖动色盘、选预设色，或输入 HEX、RGB 和 HSL，查看色块和换算值。 |
 | Cron 解析 | 支持标准 5 字段和秒数在前的 6 字段表达式；输入 IANA 时区（如 `Asia/Shanghai`），预览接下来 5 次执行时间。 |
-| Nginx 配置生成器 | 选择静态站点、SPA 或反向代理，修改参数即可预览、复制或下载 `.conf`。反向代理保留请求路径和查询参数，HTTPS 上游需填写 CA 证书路径。 |
+| Nginx 配置生成器 | 选择静态站点、SPA 或反向代理，勾选所需配置即可预览、复制或下载 `.conf`。生成的文件放在 Nginx 的 `http` 块中，也可以通过 `include` 引用。 |
+
+### Nginx 配置
+
+- 域名或 IPv4 地址可填写多个，用空格或逗号分隔。启用 HTTP 跳转 HTTPS 后，可选择 301、302、307 或 308，默认 302。跳转使用首个域名。自动跳转省略端口选项适用于 Nginx 自行构建的重定向地址。
+
+- 开启 SSL / HTTPS 后会预填 `/etc/nginx/ssl/fullchain.pem` 和 `/etc/nginx/ssl/privkey.pem`，部署时填实际文件路径。TLS 默认启用 1.2 和 1.3。TLS 1.2 使用 `ssl_ciphers`，TLS 1.3 使用 `ssl_conf_command Ciphersuites`。同一监听地址和端口有多个站点时，应在默认站点上设置 TLS 协议。
+- 两个加密套件下拉框各自支持默认套件、AES-GCM、ChaCha20、TLSRef 推荐套件或自定义。TLS 1.2 采用 Intermediate 的列表。TLS 1.3 采用 Modern 和 Intermediate 共用的列表。协议版本、密钥交换群组和套件协商顺序可单独设置。[TLSRef 配置指南](https://docs.tlsref.org/server-side-tls)
+- HTTP/2 需要 Nginx 1.25.1+ 和 `http_v2` 模块。HTTP/3 需要 TLS 1.3、`http_v3` 模块及相同端口的 UDP 监听。PROXY protocol 应与前置负载均衡器配套使用，适用于生成的 TCP 监听。
+- HSTS 可随 HTTPS 启用，默认有效期为 31,536,000 秒（365 天），可选覆盖子域名。`max-age=0` 会清除浏览器中该站点的 HSTS 策略。浏览器只接受通过 HTTPS 返回的 HSTS 响应头。
+- TLS 高级设置可选择密钥交换曲线、服务端套件优先级、共享会话缓存、会话票据和早期数据。0-RTT 默认关闭，需要 TLS 1.3，上游应用应处理早期数据的重放风险。
+- 在「访问控制与响应头」中可勾选搜索引擎爬虫、AI 爬虫和通用标识，也可填写自定义 User-Agent 关键词。命中任一关键词时返回 403，匹配忽略大小写。`robots.txt` 支持允许全部、请求停止抓取和自定义规则。开启 User-Agent 拦截后，爬虫仍可读取这份文件。[Robots Exclusion Protocol](https://www.rfc-editor.org/rfc/rfc9309.html)
+- 按 IP 限流超额返回 429。CORS 支持填写来源、勾选常用方法和请求头，也可补充自定义名称。携带凭据时须指定具体来源。CSP 策略通过响应头交给浏览器执行。
+- 访客 IP 可使用连接来源、`X-Forwarded-For`、`X-Real-IP`、PROXY protocol 或自定义请求头。使用 CDN 自定义头时，将实际回源 IP 或网段填入可信代理地址。请求头与 PROXY protocol 方式需要 `http_realip` 模块。
+- Gzip 和 Brotli 可分别设置动态压缩级别、最小响应大小和 MIME 类型。静态站点与 SPA 可发送已有的 `.gz` 或 `.br` 文件，需要对应静态模块。Gzip 还可设置 `Vary: Accept-Encoding` 和带 Via 的请求压缩策略。
+- 开启「自定义日志」后可设置日志路径和错误日志级别，并可开启「自定义访问日志格式」。点击「查看可用变量」可查看变量说明，例如 `$remote_addr "$request" $status $request_time` 可记录访客 IP、请求行、状态码和耗时。输入多行时合成一行。使用 JSON 日志时，在格式内容中填写 JSON 结构并选择「JSON 转义」。同一个 `http` 块内的自定义格式名称须唯一。
+- 反向代理可添加多条转发规则，同时命中时使用最长的匹配前缀。匹配路径为 `/` 时匹配全站，`/api` 也匹配 `/api-v2`，`/api/` 匹配以 `/api/` 开头的路径。匹配路径为 `/api/` 时，请求 `/api/items?x=1` 的转发结果如下。每条使用 HTTPS 上游的规则需填写 CA 证书路径。
+
+| 上游路径 | 上游收到的请求 |
+| --- | --- |
+| 留空 | `/api/items?x=1` |
+| `/` | `/items?x=1` |
+| `/backend/` | `/backend/items?x=1` |

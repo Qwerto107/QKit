@@ -1408,33 +1408,316 @@
             </div>
             <div>
               <h2>Nginx 配置生成器</h2>
-              <p>生成可放在 <code>http</code> 块中的 <code>server</code> 配置。</p>
+              <p>按模板和选项生成可放在 <code>http</code> 块中的配置。</p>
             </div>
           </div>
-          <form class="form">
-            <label class="fl">配置模板<select name="mode">
-              <option value="static">静态站点</option>
-              <option value="spa">SPA（单页应用）</option>
-              <option value="proxy">反向代理</option>
-            </select></label>
-            <label class="fl">域名<input class="in mono" name="name" value="example.com" maxlength="253" spellcheck="false" /></label>
-            <label class="fl">监听端口<input class="in mono" name="port" value="80" inputmode="numeric" maxlength="5" /></label>
-            <label class="fl" data-nginx-root>站点目录<input class="in mono" name="root" value="/var/www/site" maxlength="1024" spellcheck="false" /></label>
-            <label class="fl" data-nginx-upstream hidden>上游源地址<input class="in mono" name="upstream" value="http://127.0.0.1:3000" maxlength="512" spellcheck="false" /></label>
-            <label class="fl" data-nginx-ca hidden>上游 CA 证书路径<input class="in mono" name="certificate" value="/etc/ssl/certs/ca-certificates.crt" maxlength="1024" spellcheck="false" /></label>
+          <form class="nginx-settings">
+            <section class="nginx-group" aria-labelledby="nginx-basic">
+              <h3 id="nginx-basic">基本配置</h3>
+              <div class="form nginx-basic-fields">
+                <label class="fl">配置模板<select name="mode">
+                  <option value="static">静态站点</option>
+                  <option value="spa">SPA（单页应用）</option>
+                  <option value="proxy">反向代理</option>
+                </select></label>
+                <label class="fl">HTTP 端口<input class="in mono" name="port" value="80" inputmode="numeric" maxlength="5" /></label>
+                <label class="fl nginx-wide-field">域名或 IPv4 地址<input class="in mono" name="name" value="example.com" placeholder="多个地址用空格或逗号分隔" spellcheck="false" /></label>
+              </div>
+            </section>
+            <section class="nginx-group" aria-labelledby="nginx-template">
+              <h3 id="nginx-template" data-nginx-specific>站点资源</h3>
+              <div class="form">
+                <label class="fl" data-nginx-root>站点目录<input class="in mono" name="root" value="/var/www/site" maxlength="1024" spellcheck="false" /></label>
+              </div>
+              <div class="nginx-route-list" data-nginx-location-list data-nginx-proxy hidden></div>
+              <template data-nginx-location-template>
+                <div class="nginx-location" data-nginx-location>
+                  <div class="form">
+                    <label class="fl">匹配路径<input class="in mono" name="locationPath" value="/" spellcheck="false" /></label>
+                    <label class="fl">上游源地址<input class="in mono" name="upstream" value="http://127.0.0.1:3000" maxlength="512" spellcheck="false" /></label>
+                    <label class="fl">上游路径<input class="in mono" name="upstreamPath" placeholder="留空保留原路径" spellcheck="false" /></label>
+                    <label class="fl nginx-wide-field" data-nginx-ca hidden>上游 CA 证书路径<input class="in mono" name="certificate" value="/etc/ssl/certs/ca-certificates.crt" maxlength="1024" spellcheck="false" /></label>
+                  </div>
+                  <button type="button" class="nginx-remove-location" data-nginx-remove-location hidden>移除此规则</button>
+                </div>
+              </template>
+              <button type="button" class="btn nginx-add-location" data-nginx-add-location data-nginx-proxy hidden>添加转发规则</button>
+              <p class="hint" data-nginx-proxy hidden>
+                <span>同时命中多条规则时使用最长的匹配前缀。替换目录前缀时，两端宜同时以 <code>/</code> 结尾。</span>
+              </p>
+              <div class="chips" data-nginx-options="site"></div>
+              <div class="form">
+                <label class="fl" data-nginx-fields="cacheAssets" hidden>缓存天数<input class="in mono" name="cacheDays" value="7" inputmode="numeric" /></label>
+                <label class="fl" data-nginx-fields="proxyTimeout" hidden>连接超时（秒）<input class="in mono" name="connectTimeout" value="10" inputmode="numeric" /></label>
+                <label class="fl" data-nginx-fields="proxyTimeout" hidden>发送超时（秒）<input class="in mono" name="sendTimeout" value="60" inputmode="numeric" /></label>
+                <label class="fl" data-nginx-fields="proxyTimeout" hidden>读取超时（秒）<input class="in mono" name="readTimeout" value="60" inputmode="numeric" /></label>
+              </div>
+            </section>
+            <details class="nginx-fold">
+              <summary>HTTPS 与连接协议</summary>
+              <div class="chips" data-nginx-options="protocol"></div>
+              <div class="form">
+                <label class="fl" data-nginx-fields="https" hidden>HTTPS 端口<input class="in mono" name="tlsPort" value="443" inputmode="numeric" maxlength="5" /></label>
+                <label class="fl" data-nginx-fields="https" hidden>SSL 证书路径<input class="in mono" name="tlsCert" value="/etc/nginx/ssl/fullchain.pem" spellcheck="false" /></label>
+                <label class="fl" data-nginx-fields="https" hidden>SSL 私钥路径<input class="in mono" name="tlsKey" value="/etc/nginx/ssl/privkey.pem" spellcheck="false" /></label>
+              </div>
+              <div class="form">
+                <label class="fl" data-nginx-fields="https" hidden>TLS 协议<select name="tlsProtocols">
+                  <option value="TLSv1.2 TLSv1.3">TLS 1.2 和 TLS 1.3</option>
+                  <option value="TLSv1.2">仅 TLS 1.2</option>
+                  <option value="TLSv1.3">仅 TLS 1.3</option>
+                </select></label>
+                <label class="fl" data-nginx-fields="https" data-nginx-tls="TLSv1.2" hidden>TLS 1.2 加密套件
+                  <select name="tls12CipherProfile" aria-describedby="nginx-tls12-note">
+                    <option value="default">默认套件</option>
+                    <option value="aes">AES-GCM</option>
+                    <option value="chacha">ChaCha20</option>
+                    <option value="both">TLSRef Intermediate · 推荐套件</option>
+                    <option value="custom">自定义</option>
+                  </select>
+                  <span id="nginx-tls12-note"><code>ssl_ciphers</code> 设置 TLS 1.2 的加密与认证套件。TLSRef 推荐套件包含 AES-GCM 和 ChaCha20。</span>
+                </label>
+                <label class="fl" data-nginx-fields="https" data-nginx-tls="TLSv1.3" hidden>TLS 1.3 加密套件
+                  <select name="tls13CipherProfile" aria-describedby="nginx-tls13-note">
+                    <option value="default">默认套件</option>
+                    <option value="aes">AES-GCM</option>
+                    <option value="chacha">ChaCha20</option>
+                    <option value="both">TLSRef 推荐套件</option>
+                    <option value="custom">自定义</option>
+                  </select>
+                  <span id="nginx-tls13-note"><code>ssl_conf_command Ciphersuites</code> 设置 TLS 1.3 套件。TLSRef 的 Modern 和 Intermediate 在此版本使用同一份列表。</span>
+                </label>
+              </div>
+              <div class="form">
+                <label class="fl" data-nginx-fields="https" data-nginx-tls="TLSv1.2" data-nginx-cipher="tls12CipherProfile" hidden>自定义 TLS 1.2 套件<input class="in mono" name="tls12Ciphers" placeholder="例如 ECDHE+AESGCM" spellcheck="false" /></label>
+                <label class="fl" data-nginx-fields="https" data-nginx-tls="TLSv1.3" data-nginx-cipher="tls13CipherProfile" hidden>自定义 TLS 1.3 套件<input class="in mono" name="tls13Ciphers" placeholder="例如 TLS_AES_128_GCM_SHA256" spellcheck="false" /></label>
+              </div>
+              <div class="form">
+                <label class="fl" data-nginx-fields="redirectHttp" hidden>跳转状态码<select name="redirectStatus">
+                  <option value="301">301 · 永久跳转</option>
+                  <option value="302" selected>302 · 临时跳转</option>
+                  <option value="307">307 · 临时跳转，保留请求方法</option>
+                  <option value="308">308 · 永久跳转，保留请求方法</option>
+                </select></label>
+                <label class="fl nginx-hsts-age" data-nginx-fields="hsts" hidden>HSTS 有效期（秒）<input class="in mono" name="hstsMaxAge" value="31536000" inputmode="numeric" /></label>
+              </div>
+              <p class="hint" data-nginx-fields="redirectHttp" hidden>填写多个域名时，HTTP 请求统一跳转到首个域名。</p>
+              <p class="hint" data-nginx-modules="protocol" hidden></p>
+              <details class="nginx-subsettings" data-nginx-fields="https" hidden>
+                <summary>TLS 高级设置</summary>
+                <div class="form">
+                  <label class="fl">密钥交换曲线与群组
+                    <select name="tlsCurves" aria-describedby="nginx-tls-curves-note">
+                      <option value="">Nginx 默认</option>
+                      <option value="X25519:prime256v1:secp384r1">X25519 + NIST 曲线</option>
+                      <option value="X25519MLKEM768:X25519:prime256v1:secp384r1">X25519MLKEM768 + 经典曲线</option>
+                    </select>
+                    <span id="nginx-tls-curves-note"><code>ssl_ecdh_curve</code> 设置 TLS 握手可用的密钥交换群组。<code>X25519MLKEM768</code> 结合 X25519 与 ML-KEM-768，需要支持该群组的 TLS 库，例如 OpenSSL 3.5。</span>
+                  </label>
+                </div>
+                <div class="chips" data-nginx-options="tls"></div>
+                <p class="hint" data-nginx-fields="tlsEarlyData" hidden>0-RTT 请求可能被重放，上游应用需处理 Early-Data。</p>
+              </details>
+            </details>
+            <details class="nginx-fold">
+              <summary>访问控制与响应头</summary>
+              <div class="chips" data-nginx-options="access"></div>
+              <div class="nginx-bot-options" data-nginx-fields="blockBots" hidden>
+                <div class="chips" data-nginx-options="bot-categories"></div>
+                <p class="hint" data-nginx-fields="blockSearchBots" data-nginx-search-bot-note hidden></p>
+                <p class="hint" data-nginx-fields="blockAiBots" data-nginx-ai-bot-note hidden></p>
+                <fieldset>
+                  <legend>通用 User-Agent 关键词</legend>
+                  <div class="chips" data-nginx-bot-keywords></div>
+                </fieldset>
+                <label class="fl">自定义关键词<input class="in mono" name="botCustomKeywords" placeholder="多个关键词用逗号分隔" spellcheck="false" /></label>
+                <p class="hint">匹配任一关键词时返回 403，忽略大小写。只按类别或具体名称拦截时，可取消通用关键词。</p>
+              </div>
+              <div class="form">
+                <label class="fl" data-nginx-fields="robotsTxt" hidden>robots.txt 抓取规则<select name="robotsMode">
+                  <option value="allow">允许全部抓取</option>
+                  <option value="deny">请求爬虫停止抓取</option>
+                  <option value="custom">自定义规则</option>
+                </select></label>
+              </div>
+              <label class="fl nginx-wide-field" data-nginx-robots-content hidden>robots.txt 内容
+                <textarea class="in mono" name="robotsContent" rows="4" spellcheck="false">User-agent: *
+Disallow:</textarea>
+              </label>
+              <p class="hint" data-nginx-fields="robotsTxt" hidden>通过 /robots.txt 发布规则，供遵循抓取协议的爬虫读取。</p>
+              <div class="form">
+                <label class="fl" data-nginx-fields="limitReq" hidden>每个 IP 的请求数（次/秒）<input class="in mono" name="requestRate" value="10" inputmode="numeric" /></label>
+                <label class="fl" data-nginx-fields="limitReq" hidden>突发请求数<input class="in mono" name="requestBurst" value="20" inputmode="numeric" /></label>
+              </div>
+              <div class="nginx-cors-options" data-nginx-fields="cors" hidden>
+                <label class="fl">允许的来源<input class="in mono" name="corsOrigin" value="https://app.example.com" placeholder="站点来源或 *" spellcheck="false" /></label>
+                <fieldset>
+                  <legend>允许的方法</legend>
+                  <div class="chips" data-nginx-cors-methods></div>
+                </fieldset>
+                <fieldset>
+                  <legend>允许的请求头</legend>
+                  <div class="chips" data-nginx-cors-headers></div>
+                </fieldset>
+                <p class="hint">方法和请求头列表用于浏览器的跨域预检。</p>
+                <details class="nginx-subsettings">
+                  <summary>自定义方法和请求头</summary>
+                  <div class="form">
+                    <label class="fl">额外的方法<input class="in mono" name="corsCustomMethods" placeholder="例如 PROPFIND，多个用逗号分隔" spellcheck="false" /></label>
+                    <label class="fl">额外的请求头<input class="in mono" name="corsCustomHeaders" placeholder="例如 X-Tenant-ID，多个用逗号分隔" spellcheck="false" /></label>
+                  </div>
+                </details>
+                <div class="chips" data-nginx-options="cors"></div>
+              </div>
+              <label class="fl nginx-wide-field" data-nginx-fields="csp" hidden>CSP 策略
+                <textarea class="in mono" name="cspPolicy" rows="3" spellcheck="false">default-src 'self'; object-src 'none'; base-uri 'self'</textarea>
+              </label>
+            </details>
+            <details class="nginx-fold">
+              <summary>访客 IP</summary>
+              <div class="form">
+                <label class="fl">访客 IP 来源<select name="ipSource">
+                  <option value="connection">连接来源（默认）</option>
+                  <option value="forwarded">X-Forwarded-For</option>
+                  <option value="real">X-Real-IP</option>
+                  <option value="protocol" disabled>PROXY protocol</option>
+                  <option value="custom">自定义请求头</option>
+                </select></label>
+                <label class="fl" data-nginx-custom-ip-header hidden>访客 IP 请求头<input class="in mono" name="ipHeader" placeholder="例如 CF-Connecting-IP" spellcheck="false" /></label>
+                <label class="fl" data-nginx-trusted hidden>可信代理 IP 或网段<input class="in mono" name="trustedNetworks" value="127.0.0.1" spellcheck="false" /></label>
+              </div>
+              <p class="hint" data-nginx-modules="ip" hidden>需要 http_realip 模块。使用 CDN 时，可信地址填写 CDN 的实际回源 IP 或网段。</p>
+            </details>
+            <details class="nginx-fold">
+              <summary>压缩与请求体</summary>
+              <section class="nginx-compression-group" aria-labelledby="nginx-gzip-title">
+                <h4 id="nginx-gzip-title">Gzip</h4>
+                <div class="chips" data-nginx-options="gzip"></div>
+                <div class="form">
+                  <label class="fl" data-nginx-fields="gzip" hidden>压缩级别（1–9）<input class="in mono" name="gzipLevel" value="1" inputmode="numeric" /></label>
+                  <label class="fl" data-nginx-fields="gzip" hidden>最小响应大小（字节）<input class="in mono" name="gzipMinLength" value="1024" inputmode="numeric" /></label>
+                  <label class="fl" data-nginx-fields="gzip gzipStatic" hidden>带 Via 请求头的请求<select name="gzipProxied">
+                    <option value="default">继承 Nginx 设置</option>
+                    <option value="off">关闭压缩</option>
+                    <option value="uncached">过期或不可共享缓存的响应</option>
+                    <option value="any">均可压缩</option>
+                  </select></label>
+                </div>
+                <label class="fl nginx-wide-field" data-nginx-fields="gzip" hidden>Gzip MIME 类型
+                  <textarea class="in mono" name="gzipTypes" rows="2" spellcheck="false" placeholder="留空沿用 Nginx 的 MIME 类型设置"></textarea>
+                  <span>用空格或逗号分隔，<code>*</code> 匹配所有类型，<code>text/html</code> 已包括。</span>
+                </label>
+                <div class="chips" data-nginx-options="gzip-settings" data-nginx-fields="gzip gzipStatic" hidden></div>
+                <p class="hint" data-nginx-fields="gzipStatic" hidden>发送预压缩文件需要 http_gzip_static 模块和同名 .gz 文件。</p>
+              </section>
+              <section class="nginx-compression-group" aria-labelledby="nginx-brotli-title">
+                <h4 id="nginx-brotli-title">Brotli</h4>
+                <div class="chips" data-nginx-options="brotli"></div>
+                <div class="form">
+                  <label class="fl" data-nginx-fields="brotli" hidden>压缩级别（0–11）<input class="in mono" name="brotliLevel" value="6" inputmode="numeric" /></label>
+                  <label class="fl" data-nginx-fields="brotli" hidden>最小响应大小（字节）<input class="in mono" name="brotliMinLength" value="20" inputmode="numeric" /></label>
+                </div>
+                <label class="fl nginx-wide-field" data-nginx-fields="brotli" hidden>Brotli MIME 类型
+                  <textarea class="in mono" name="brotliTypes" rows="2" spellcheck="false" placeholder="留空沿用 Nginx 的 MIME 类型设置"></textarea>
+                  <span>用空格或逗号分隔，<code>*</code> 匹配所有类型，<code>text/html</code> 已包括。</span>
+                </label>
+                <p class="hint" data-nginx-fields="brotli brotliStatic" hidden>需要加载对应的 ngx_brotli 过滤或静态模块。</p>
+              </section>
+              <div class="chips" data-nginx-options="server"></div>
+              <div class="form">
+                <label class="fl" data-nginx-fields="limitUpload" hidden>上传大小上限（MiB）<input class="in mono" name="uploadSize" value="20" inputmode="numeric" /></label>
+              </div>
+            </details>
+            <details class="nginx-fold">
+              <summary>日志</summary>
+              <div class="chips" data-nginx-options="log"></div>
+              <div class="form">
+                <label class="fl" data-nginx-fields="logs" hidden>访问日志路径<input class="in mono" name="accessLog" value="/var/log/nginx/access.log" spellcheck="false" /></label>
+                <label class="fl" data-nginx-fields="logs" hidden>错误日志路径<input class="in mono" name="errorLog" value="/var/log/nginx/error.log" spellcheck="false" /></label>
+                <label class="fl" data-nginx-fields="logs" hidden>错误日志级别<select name="errorLevel">
+                  <option value="debug">调试（debug）</option>
+                  <option value="info">信息（info）</option>
+                  <option value="notice">通知（notice）</option>
+                  <option value="warn" selected>警告（warn）</option>
+                  <option value="error">错误（error）</option>
+                  <option value="crit">严重（crit）</option>
+                  <option value="alert">告警（alert）</option>
+                  <option value="emerg">紧急（emerg）</option>
+                </select></label>
+              </div>
+              <div class="form">
+                <label class="fl" data-nginx-fields="customLogFormat" hidden>访问日志格式名称<input class="in mono" name="logFormatName" value="qkit_access" spellcheck="false" /></label>
+                <label class="fl" data-nginx-fields="customLogFormat" hidden>日志变量转义
+                  <select name="logEscape" aria-describedby="nginx-log-escape-note">
+                    <option value="default" data-note='适合普通文本日志。变量值 a"b 会写成 a\x22b。'>默认转义</option>
+                    <option value="json" data-note='适合 JSON 日志。变量值 a"b 会写成 a\"b，日志格式需填写 JSON 结构。'>JSON 转义</option>
+                    <option value="none" data-note="原样记录变量值，保留其中的引号、反斜杠和换行。">不转义</option>
+                  </select>
+                  <span id="nginx-log-escape-note"></span>
+                </label>
+                <label class="fl nginx-wide-field" data-nginx-fields="customLogFormat" hidden>访问日志格式
+                  <textarea class="in mono" name="logPattern" rows="2" spellcheck="false">$remote_addr [$time_local] "$request" $status $body_bytes_sent $request_time</textarea>
+                </label>
+              </div>
+              <details class="nginx-log-variables" data-nginx-fields="customLogFormat" hidden>
+                <summary>查看可用变量</summary>
+                <div class="nginx-variable-groups">
+                  <div>
+                    <h4>请求</h4>
+                    <dl>
+                      <dt><code>$remote_addr</code></dt><dd>访客 IP</dd>
+                      <dt><code>$host</code></dt><dd>请求主机名</dd>
+                      <dt><code>$request</code></dt><dd>完整请求行</dd>
+                      <dt><code>$request_method</code></dt><dd>请求方法</dd>
+                      <dt><code>$request_uri</code></dt><dd>原始 URI（含参数）</dd>
+                      <dt><code>$http_referer</code></dt><dd>来源页面</dd>
+                      <dt><code>$http_user_agent</code></dt><dd>客户端标识</dd>
+                    </dl>
+                  </div>
+                  <div>
+                    <h4>响应与时间</h4>
+                    <dl>
+                      <dt><code>$status</code></dt><dd>HTTP 状态码</dd>
+                      <dt><code>$body_bytes_sent</code></dt><dd>响应体字节数</dd>
+                      <dt><code>$bytes_sent</code></dt><dd>发送总字节数</dd>
+                      <dt><code>$request_time</code></dt><dd>请求总耗时（秒）</dd>
+                      <dt><code>$time_local</code></dt><dd>本地日志时间</dd>
+                      <dt><code>$time_iso8601</code></dt><dd>ISO 8601 时间</dd>
+                    </dl>
+                  </div>
+                  <div>
+                    <h4>上游与 TLS</h4>
+                    <dl>
+                      <dt><code>$upstream_addr</code></dt><dd>上游地址</dd>
+                      <dt><code>$upstream_status</code></dt><dd>上游状态码</dd>
+                      <dt><code>$upstream_connect_time</code></dt><dd>上游连接耗时（秒）</dd>
+                      <dt><code>$upstream_response_time</code></dt><dd>上游响应耗时（秒）</dd>
+                      <dt><code>$ssl_protocol</code></dt><dd>TLS 版本</dd>
+                      <dt><code>$ssl_cipher</code></dt><dd>TLS 加密套件</dd>
+                    </dl>
+                  </div>
+                </div>
+                <a href="https://nginx.org/en/docs/varindex.html" target="_blank" rel="noopener noreferrer">Nginx 完整变量索引</a>
+              </details>
+            </details>
           </form>
           <p class="hint" data-status role="status"></p>
-          <label class="f">
-            <span class="fh">Nginx 配置</span>
-            <textarea class="mono" data-nginx-config aria-label="Nginx 配置" rows="16" readonly></textarea>
-          </label>
-          <div class="bar">
-            <button type="button" class="btn p" data-nginx-copy>
-              <svg class="i" aria-hidden="true"><use href="#copy" /></svg>复制配置
-            </button>
-            <button type="button" class="btn" data-nginx-download>
-              <svg class="i" aria-hidden="true"><use href="#dl" /></svg>下载 .conf
-            </button>
+          <div class="nginx-result-header">
+            <h3 id="nginx-result-label">Nginx 配置</h3>
+            <div class="bar">
+              <button type="button" class="btn p" data-nginx-copy>
+                <svg class="i" aria-hidden="true"><use href="#copy" /></svg>复制配置
+              </button>
+              <button type="button" class="btn" data-nginx-download>
+                <svg class="i" aria-hidden="true"><use href="#dl" /></svg>下载 .conf
+              </button>
+            </div>
+          </div>
+          <div class="f">
+            <div class="nginx-config-editor">
+              <pre class="nginx-highlight" aria-hidden="true" hidden></pre>
+              <textarea class="mono" data-nginx-config aria-labelledby="nginx-result-label" rows="16" readonly></textarea>
+            </div>
           </div>
         </section>
 
