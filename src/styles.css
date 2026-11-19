@@ -628,7 +628,8 @@ input[type="range"] {
   background: linear-gradient(
     90deg,
     var(--ac) var(--p, 30%),
-    var(--bd) var(--p, 30%)
+    var(--bd) var(--p, 30%) var(--limit, 100%),
+    color-mix(in srgb, var(--bd), transparent 55%) var(--limit, 100%)
   );
   width: 100%;
   margin: 0;

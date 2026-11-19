@@ -127,12 +127,17 @@ $$("[data-io]").forEach((container) => {
   };
 });
 
+function rangeValueMax(range) {
+  return Number(range.dataset.valueMax ?? range.max);
+}
+
 function fillRange(range) {
-  const extent = Number(range.max) - Number(range.min);
-  range.style.setProperty(
-    "--p",
-    `${extent ? ((range.value - range.min) / extent) * 100 : 100}%`,
-  );
+  const minimum = Number(range.min);
+  const extent = Number(range.max) - minimum;
+  const position = (value) => `${extent ? ((value - minimum) / extent) * 100 : 100}%`;
+  range.style.setProperty("--p", position(range.value));
+  if (range.dataset.valueMax !== undefined)
+    range.style.setProperty("--limit", position(rangeValueMax(range)));
 }
 $$(".step").forEach((step) => {
   const [minus, input, plus] = step.children;
@@ -145,11 +150,11 @@ $$(".step").forEach((step) => {
     plus.setAttribute("aria-label", `增加${label}`);
     range.setAttribute("aria-label", `${label}滑块`);
   }
+  const maximum = () => (range ? rangeValueMax(range) : Number(input.max || 64));
   const refresh = () => {
     const minimum = Number(range?.min || input.min || 0);
-    const maximum = Number(range?.max || input.max || 64);
     minus.disabled = input.disabled || Number(input.value) <= minimum;
-    plus.disabled = input.disabled || Number(input.value) >= maximum;
+    plus.disabled = input.disabled || Number(input.value) >= maximum();
   };
   const set = (value, emit = true) => {
     if (input.disabled) {
@@ -159,7 +164,7 @@ $$(".step").forEach((step) => {
     const number = Number.isFinite(value) ? Math.round(value) : 0;
     input.value = Math.max(
       Number(range?.min || input.min || 0),
-      Math.min(Number(range?.max || input.max || 64), number),
+      Math.min(maximum(), number),
     );
     if (range) {
       range.value = input.value;
@@ -203,6 +208,8 @@ $$(".step").forEach((step) => {
 $$(".rg input[type=range]").forEach((range) => {
   fillRange(range);
   range.addEventListener("input", () => {
+    const maximum = rangeValueMax(range);
+    if (Number(range.value) > maximum) range.value = String(maximum);
     fillRange(range);
     $(".step input", range.closest(".rg")).value = range.value;
     $(".step", range.closest(".rg")).dispatchEvent(new Event("limitschange"));

@@ -202,7 +202,7 @@ export function initPassword() {
   const excludeToggle = optionInputs.pop();
   const minimumInputs = $$(".sc input", panel);
   const balance = $("#password-balance", panel);
-  const ranges = $$("input[type=range]", panel);
+  const [lengthRange, countRange] = $$("input[type=range]", panel);
   const [generate, clear] = $$(".bar .btn", panel);
   const saveButton = $("#password-save-config", panel);
   const resetButton = $("#password-reset-config", panel);
@@ -220,11 +220,13 @@ export function initPassword() {
     exclusion.hidden = !excludeToggle.checked;
     const { groups } = characterGroups(read());
     const capacity = new Set(groups.flat()).size;
-    ranges[0].max = optionInputs[0].checked
-      ? Math.max(4, Math.min(64, capacity))
-      : 64;
-    ranges[0].dispatchEvent(new Event("input"));
-    const length = Number(ranges[0].value);
+    // 保持滑条刻度固定，可用字符数只限制允许选到的最大值。
+    const scaleMax = Number(lengthRange.max);
+    lengthRange.dataset.valueMax = optionInputs[0].checked
+      ? String(Math.max(Number(lengthRange.min), Math.min(scaleMax, capacity)))
+      : lengthRange.max;
+    lengthRange.dispatchEvent(new Event("input"));
+    const length = Number(lengthRange.value);
     const minimumsEnabled = optionInputs[2].checked;
     balance.disabled = !minimumsEnabled || capacity === 0;
     minimumInputs.forEach((input, index) => {
@@ -253,8 +255,8 @@ export function initPassword() {
     custom: custom.value,
     excluded: excluded.value,
     excludeSpecified: excludeToggle.checked,
-    length: Number(ranges[0].value),
-    count: Number(ranges[1].value),
+    length: Number(lengthRange.value),
+    count: Number(countRange.value),
   });
   const restore = (config) => {
     characterInputs.forEach((field, index) => {
@@ -279,13 +281,11 @@ export function initPassword() {
       typeof config.excluded === "string" ? config.excluded.slice(0, 256) : "";
     // 旧配置没有开关，已填写的排除字符继续生效。
     excludeToggle.checked = config.excludeSpecified ?? Boolean(excluded.value);
-    ranges.forEach((range, index) => {
-      const key = index ? "count" : "length";
-      const value = Number(config[key]);
-      range.max = index ? 50 : 64;
-      range.value = Number.isInteger(value) ? value : DEFAULTS[key];
-      range.dispatchEvent(new Event("input"));
-    });
+    const length = Number(config.length);
+    const count = Number(config.count);
+    lengthRange.value = Number.isInteger(length) ? length : DEFAULTS.length;
+    countRange.value = Number.isInteger(count) ? count : DEFAULTS.count;
+    countRange.dispatchEvent(new Event("input"));
     update();
   };
   const save = () => writeStorage("qkit.password", read());
