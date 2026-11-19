@@ -304,9 +304,6 @@
               诗词密码由公开诗句按固定规则提取，存在一定规律。可在结果基础上自行调整几位，或加入只有自己知道的字符。
             </div>
           </div>
-          <p id="poetry-load-status" class="poetry-empty" role="status">
-            正在加载诗词……
-          </p>
           <div id="poetry-controls" inert>
             <h3 style="margin-top: 20px">生成规则</h3>
             <div class="top" style="margin-bottom: 0">
@@ -394,11 +391,14 @@
                 <path d="M12 16v-4M12 8h.01" /></svg
               >悬停或点击线索，联动高亮中文与密码片段，帮助记忆
             </p>
-            <p id="poetry-empty" class="poetry-empty" hidden>
-              暂无结果，点击“换一批”生成。
-            </p>
-            <div class="pg" id="pg" aria-live="polite"></div>
           </div>
+          <p id="poetry-load-status" class="poetry-loading" role="status">
+            正在加载诗词……
+          </p>
+          <p id="poetry-empty" class="poetry-empty" hidden>
+            暂无结果，点击“换一批”生成。
+          </p>
+          <div class="pg" id="pg" aria-live="polite"></div>
         </section>
 
         <!-- Base64 -->

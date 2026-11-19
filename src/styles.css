@@ -1727,6 +1727,9 @@ input[type="range"]::-moz-range-thumb {
   font-variant-numeric: tabular-nums;
 }
 .poem-range {
+  /* 量程为 6–32，先显示默认 12–18 字，初始化后同步实际选区。 */
+  --start: calc(600% / 26);
+  --end: calc(1200% / 26);
   position: relative;
   height: 32px;
   margin-top: 4px;
@@ -2241,11 +2244,27 @@ input[type="range"]::-moz-range-thumb {
 .pc .pw code b {
   white-space: pre-wrap;
 }
-.poetry-empty {
+.poetry-empty,
+.poetry-loading {
   color: var(--mu);
   font-size: 12px;
-  padding: 18px 0;
   text-align: center;
+}
+.poetry-empty {
+  padding: 18px 0;
+}
+.poetry-loading {
+  display: grid;
+  place-items: center;
+  min-height: 68px;
+  margin: 14px 0 0;
+  padding: 12px;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  background: var(--fld);
+}
+#pg:empty {
+  margin-top: 0;
 }
 .step button:disabled {
   opacity: 0.35;
