@@ -349,6 +349,9 @@ nav {
   display: block;
   animation: in 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+#poem.on {
+  animation: none;
+}
 @keyframes in {
   from {
     opacity: 0;
@@ -1666,7 +1669,18 @@ input[type="range"]::-moz-range-thumb {
   color: var(--mu);
   font-size: 12px;
   line-height: 1.6;
-  animation: in 0.45s 0.1s backwards;
+  animation: warning-shake 0.24s ease-in-out 0.12s 3;
+}
+@keyframes warning-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
 }
 .warn .i {
   width: 30px;
