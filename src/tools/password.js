@@ -9,7 +9,7 @@ const DEFAULTS = {
   excluded: "",
   excludeSpecified: false,
   length: 24,
-  count: 12,
+  count: 24,
 };
 
 // 拒绝采样消除取模偏差，随机性仅来自浏览器的密码学随机源。

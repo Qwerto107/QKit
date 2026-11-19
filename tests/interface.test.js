@@ -187,8 +187,8 @@ test("完整页面的路由、配色、密码限制、下拉及诗词联动正�
 
   $("#nav-pwd").click();
   assert.equal(window.location.pathname, "/password");
-  assert.equal($("#pwd .password-item").length, 12);
-  assert.equal($("#pwd input[type=range]")[1].value, "12");
+  assert.equal($$("#pwd .password-item").length, 24);
+  assert.equal($$("#pwd input[type=range]")[1].value, "24");
   const characters = $$("#pwd .chips")[0].querySelectorAll("input");
   const options = $$("#pwd .chips")[1].querySelectorAll("input");
   const exclusion = $("#password-exclusion");
@@ -244,7 +244,7 @@ test("完整页面的路由、配色、密码限制、下拉及诗词联动正�
   assert.equal(digitPlus.disabled, true);
   passwordReset.click();
   await tick();
-  assert.equal($("#pwd input[type=range]")[1].value, "12");
+  assert.equal($$("#pwd input[type=range]")[1].value, "24");
   assert.equal(exclusion.hidden, true);
   assert.equal(excluded.value, "");
   assert.equal(digits.value, "6");
