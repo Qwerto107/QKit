@@ -55,7 +55,8 @@
 | 二维码 | `/qrcode` | 生成文本二维码，下载 PNG 或识别本地图片 |
 | 文本 Diff | `/diff` | 按行对比文本，高亮新增和删除 |
 | 正则测试 | `/regex` | 支持 JavaScript、PHP（PCRE2）和 Go（RE2）语法，高亮匹配并查看捕获组 |
-| 进制 / 颜色 | `/convert` | 转换整数进制及 HEX、RGB、HSL 颜色 |
+| 进制转换 | `/convert` | 转换有符号整数的二、八、十、十六进制 |
+| 颜色转换 | `/color` | 调色板取色及 HEX、RGB、HSL 互转 |
 | Cron 解析 | `/cron` | 校验表达式，按选定时区预览执行时间 |
 | Nginx 配置生成器 | `/nginx` | 生成静态站点、SPA 和反向代理配置，支持复制和下载 `.conf` |
 

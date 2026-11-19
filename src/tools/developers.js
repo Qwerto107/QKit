@@ -509,7 +509,7 @@ function initRegex(panel) {
   };
 }
 
-function initConversions(panel) {
+function initRadixConversion(panel) {
   const base = $("[data-radix-base]", panel);
   const integer = $("[data-radix-input]", panel);
   const radix = $("[data-radix-run]", panel);
@@ -526,6 +526,9 @@ function initConversions(panel) {
         ]),
       );
     });
+}
+
+function initColorConversion(panel) {
   const color = $("[data-color-input]", panel);
   const colorRun = $("[data-color-run]", panel);
   const swatch = $("[data-color-swatch]", panel);
@@ -605,6 +608,7 @@ export function initDevelopers() {
   initQrCode($("#qrcode"));
   initDiff($("#diff"));
   initRegex($("#regex"));
-  initConversions($("#convert"));
+  initRadixConversion($("#convert"));
+  initColorConversion($("#color"));
   initCron($("#cron"));
 }

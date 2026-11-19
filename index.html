@@ -1343,15 +1343,11 @@
               <svg class="i"><use href="#rf" /></svg>
             </div>
             <div>
-              <h2>进制 / 颜色转换</h2>
-              <p>整数的 2 / 8 / 10 / 16 进制互转，或换算 HEX、RGB、HSL。</p>
+              <h2>进制转换</h2>
+              <p>整数的二、八、十、十六进制互转。</p>
             </div>
           </div>
-          <div class="seg" data-show="convert-mode" aria-label="转换类型">
-            <button class="on" data-v="radix">进制</button
-            ><button data-v="color">颜色</button>
-          </div>
-          <div class="media-settings" id="convert-mode-radix">
+          <div class="media-settings">
             <div class="form">
               <label class="fl"
                 >输入进制<select data-radix-base>
@@ -1372,7 +1368,19 @@
             <button class="btn p" data-radix-run>转换进制</button>
             <div class="res" data-radix-results hidden></div>
           </div>
-          <div class="media-settings hide" id="convert-mode-color">
+        </section>
+
+        <section class="panel" id="color">
+          <div class="ph">
+            <div class="t">
+              <svg class="i" aria-hidden="true"><use href="#img" /></svg>
+            </div>
+            <div>
+              <h2>颜色转换</h2>
+              <p>用调色板取色，或转换 HEX、RGB 和 HSL。</p>
+            </div>
+          </div>
+          <div class="media-settings">
             <label class="fl"
               >颜色值<input
                 class="in mono"
