@@ -925,6 +925,10 @@ input[type="range"]::-moz-range-thumb {
   resize: vertical;
   outline: 0;
 }
+#qrcode [data-qrcode-input] {
+  min-height: 170px;
+  resize: vertical;
+}
 .f textarea,
 .json-highlight {
   padding: 8px 14px 12px;

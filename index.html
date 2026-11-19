@@ -1210,10 +1210,12 @@
             ><button data-v="scan">识别</button>
           </div>
           <div class="media-settings" id="qrcode-mode-generate">
-            <label class="f"
-              ><span class="fh">二维码内容</span
-              ><textarea
+            <label class="stack">
+              <span>二维码内容</span>
+              <textarea
+                class="in mono"
                 data-qrcode-input
+                aria-label="二维码内容"
                 placeholder="输入文字或链接"
               ></textarea>
             </label>
