@@ -5,7 +5,9 @@ import {
   convertInteger,
   createIdentifier,
   decodeJwt,
+  describeJsonError,
   formatJson,
+  jsonLevelTokens,
 } from "../src/tools/dev-values.js";
 import { cronDates } from "../src/tools/developers.js";
 import { findMatches } from "../src/tools/regex.js";
@@ -21,6 +23,45 @@ test("JSON 调整缩进而不改变重复键、大整数或字符串里的符号
     String.raw`{"n":90071992547409931234,"n":1e+002,"label":"a,b: [\"x\"]","nested":[[],{"x":false}]}`,
   );
   assert.throws(() => formatJson('{"n":}'), SyntaxError);
+});
+
+test("JSON 高亮把成对括号和键名放在对应层级，并略过字符串内的括号", () => {
+  const input = String.raw`{"a": [{"title": "[{}]", "escaped\\\"key": 1}]}`;
+  const tokens = [...jsonLevelTokens(input)];
+  assert.deepEqual(tokens.map(({ token, level }) => [token, level]), [
+    ["{", 0], ['"a"', 0], ["[", 1], ["{", 2], ['"title"', 2],
+    [String.raw`"escaped\\\"key"`, 2], ["}", 2], ["]", 1], ["}", 0],
+  ]);
+  assert.ok(tokens.every(({ token, index }) => input.startsWith(token, index)));
+});
+
+test("JSON 错误详情定位长行中未加引号的键名并截取附近内容", () => {
+  const source = '{"pad":"' + "x".repeat(35048) + '", bad: 1}';
+  assert.throws(() => JSON.parse(source), (error) => {
+    const diagnostic = describeJsonError(source, error.message);
+    assert.equal(diagnostic.position, 35059);
+    assert.equal(diagnostic.line, 1);
+    assert.equal(diagnostic.column, 35060);
+    assert.equal(diagnostic.marked, "b");
+    assert.match(diagnostic.reason, /双引号/);
+    assert.equal(diagnostic.before.length, 49);
+    assert.equal(diagnostic.after, "ad: 1}");
+    return true;
+  });
+});
+
+test("JSON 错误详情支持行列坐标、尾逗号与文末定位", () => {
+  const source = '{\r\n  "a": 1,\r\n}';
+  const trailing = describeJsonError(source, "expected double-quoted property name at line 3 column 1 of the JSON data");
+  assert.equal(trailing.position, source.length - 1);
+  assert.equal(trailing.marked, "}");
+  assert.match(trailing.reason, /逗号/);
+  const end = describeJsonError('{\n  "key":', "Unexpected end of JSON input");
+  assert.equal(end.position, end.end);
+  assert.equal(end.line, 2);
+  assert.equal(end.column, 9);
+  assert.equal(end.marked, "");
+  assert.equal(describeJsonError("text", "JSON Parse error: Unexpected identifier").position, null);
 });
 
 test("JWT 用 UTC 显示时间声明，过期边界包含 exp 本身", () => {

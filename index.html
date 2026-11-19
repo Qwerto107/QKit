@@ -1105,13 +1105,27 @@
               </select>
             </label>
           </p>
-          <div class="io" data-io="输入 JSON|转换结果|粘贴要处理的 JSON"></div>
+          <div class="io" data-sync-height data-io="输入 JSON|转换结果|粘贴要处理的 JSON"></div>
           <div class="bar">
             <button class="btn p" data-json-format>格式化</button>
             <button class="btn" data-json-minify>压缩</button>
             <button class="btn" data-json-validate>校验</button>
           </div>
           <p class="hint" data-status role="status"></p>
+          <div class="json-diagnostic" data-json-diagnostic hidden>
+            <div class="json-diagnostic-heading">
+              <div>
+                <p data-json-error role="alert"></p>
+                <span data-json-location></span>
+              </div>
+              <button type="button" class="btn" data-json-jump>定位错误</button>
+            </div>
+            <pre class="json-error-context mono" data-json-context></pre>
+            <details>
+              <summary>原始错误信息</summary>
+              <code class="mono" data-json-error-message></code>
+            </details>
+          </div>
         </section>
 
         <section class="panel" id="jwt">

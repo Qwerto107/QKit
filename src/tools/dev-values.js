@@ -1,32 +1,100 @@
 import { decodeText } from "./codecs.js";
 
+const JSON_TOKENS = /"(?:[^"\\]|\\.)*"|[{}\[\],:]|[^\s{}\[\],:"]+|\s+/g;
+
 export function formatJson(text, indent = "  ") {
   JSON.parse(text);
   // 只调整词元之间的空白，避免大整数失真或重复键被合并。
   let depth = 0;
   let previous;
   const newline = () => (indent ? "\n" + indent.repeat(depth) : "");
-  return text.replace(
-    /"(?:[^"\\]|\\.)*"|[{}\[\],:]|[^\s{}\[\],:"]+|\s+/g,
-    (token) => {
-      if (/^\s/.test(token)) return "";
-      const followsOpening = previous === "{" || previous === "[";
-      previous = token;
-      const line = followsOpening ? newline() : "";
-      if (token === "{" || token === "[") {
-        depth++;
-        if (indent && depth > 256) throw new Error("JSON 嵌套过深，无法格式化");
-        return line + token;
-      }
-      if (token === "}" || token === "]") {
-        depth--;
-        return (followsOpening ? "" : newline()) + token;
-      }
-      if (token === ",") return token + newline();
-      if (token === ":") return indent ? ": " : ":";
+  return text.replace(JSON_TOKENS, (token) => {
+    if (/^\s/.test(token)) return "";
+    const followsOpening = previous === "{" || previous === "[";
+    previous = token;
+    const line = followsOpening ? newline() : "";
+    if (token === "{" || token === "[") {
+      depth++;
+      if (indent && depth > 256) throw new Error("JSON 嵌套过深，无法格式化");
       return line + token;
-    },
-  );
+    }
+    if (token === "}" || token === "]") {
+      depth--;
+      return (followsOpening ? "" : newline()) + token;
+    }
+    if (token === ",") return token + newline();
+    if (token === ":") return indent ? ": " : ":";
+    return line + token;
+  });
+}
+
+export function* jsonLevelTokens(text) {
+  let depth = 0;
+  const colon = /\s*:/y;
+  for (const { 0: token, index } of text.matchAll(JSON_TOKENS)) {
+    if (token === "}" || token === "]") depth = Math.max(0, depth - 1);
+    colon.lastIndex = index + token.length;
+    if ("{}[]".includes(token) || (token.startsWith('"') && colon.test(text))) {
+      const level = token.startsWith('"') ? Math.max(0, depth - 1) : depth;
+      yield { token, index, level };
+    }
+    if (token === "{" || token === "[") depth++;
+  }
+}
+
+function jsonErrorOffset(text, message) {
+  const position = /\bat position (\d+)(?: \(line \d+ column \d+\))?$/i.exec(message);
+  if (position) return Math.min(Number(position[1]), text.length);
+  const coordinate = /\bat line (\d+) column (\d+)(?: of the JSON data)?$/i.exec(message);
+  if (coordinate) {
+    let offset = 0;
+    const breaks = text.matchAll(/\r\n|[\r\n]/g);
+    for (let line = 1; line < Number(coordinate[1]); line++) {
+      const newline = breaks.next().value;
+      if (!newline) return null;
+      offset = newline.index + newline[0].length;
+    }
+    return Math.min(offset + Number(coordinate[2]) - 1, text.length);
+  }
+  if (/^Unexpected end of JSON input$/i.test(message)) return text.length;
+  return null;
+}
+
+export function describeJsonError(text, message) {
+  const position = jsonErrorOffset(text, message);
+  const character = position === null ? "" : text[position] ?? "";
+  let reason = "JSON 语法有误，请展开原始错误信息。";
+  if ((character === "}" || character === "]") && text.slice(0, position).trimEnd().endsWith(",")) {
+    reason = "最后一项后多了一个逗号，请删除闭合括号前的逗号。";
+  } else if (/expected (?:double-quoted )?property name/i.test(message)) {
+    reason = '对象的键名必须用双引号包裹，例如 "name"。';
+  } else if (/expected .*?:.*? after property name/i.test(message)) {
+    reason = "在键名和值之间加上冒号。";
+  } else if (/unexpected end of (?:JSON input|data)/i.test(message)) {
+    reason = "JSON 提前结束，请检查是否缺少值、引号或闭合括号。";
+  } else if (/unterminated string/i.test(message)) {
+    reason = "字符串缺少结束的双引号。";
+  } else if (/unexpected non-whitespace character after JSON/i.test(message)) {
+    reason = "完整的 JSON 值之后还有多余字符。";
+  }
+  if (position === null) return { reason, position };
+
+  const lines = text.slice(0, position).split(/\r\n|[\r\n]/);
+  const codePoint = text.codePointAt(position);
+  const marked = codePoint === undefined ? "" : String.fromCodePoint(codePoint);
+  const end = position + marked.length;
+  const start = Math.max(0, position - 48);
+  const stop = Math.min(text.length, end + 48);
+  return {
+    reason,
+    position,
+    end,
+    line: lines.length,
+    column: lines.at(-1).length + 1,
+    before: (start ? "…" : "") + text.slice(start, position),
+    marked,
+    after: text.slice(end, stop) + (stop < text.length ? "…" : ""),
+  };
 }
 
 export function decodeJwt(value, now = Date.now() / 1000) {

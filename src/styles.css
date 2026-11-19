@@ -922,9 +922,12 @@ input[type="range"]::-moz-range-thumb {
   min-height: 170px;
   border: 0;
   background: transparent;
-  padding: 8px 14px 12px;
   resize: vertical;
   outline: 0;
+}
+.f textarea,
+.json-highlight {
+  padding: 8px 14px 12px;
   font:
     12.5px/1.6 ui-monospace,
     Menlo,
@@ -938,6 +941,81 @@ input[type="range"]::-moz-range-thumb {
 }
 [data-sync-height] .f textarea {
   flex: none;
+}
+.json-result-editor {
+  position: relative;
+  display: grid;
+  min-width: 0;
+}
+.json-result-editor textarea,
+.json-highlight {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-variant-ligatures: none;
+}
+.json-highlight {
+  position: absolute;
+  inset: 0 auto auto 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--tx);
+}
+.json-highlight:not([hidden]) + textarea {
+  position: relative;
+  color: transparent;
+}
+.json-highlight:not([hidden]) + textarea::selection {
+  background: color-mix(in oklch, var(--ac) 30%, transparent);
+  color: transparent;
+}
+.json-level-0 { color: var(--ac); }
+.json-level-1 { color: light-dark(#925024, #efa56e); }
+.json-level-2 { color: light-dark(#146e60, #79cfb6); }
+.json-level-3 { color: light-dark(#7047a8, #c6a2ff); }
+.json-level-4 { color: light-dark(#9d3e63, #ef98bd); }
+.json-diagnostic {
+  --json-error-color: light-dark(#9b2937, #ffabb6);
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in oklch, var(--json-error-color) 25%, var(--bd));
+  border-radius: 10px;
+  background: var(--fld);
+}
+.json-diagnostic-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.json-diagnostic-heading p {
+  margin: 0 0 3px;
+  font-weight: 600;
+  color: var(--json-error-color);
+}
+.json-diagnostic-heading span,
+.json-diagnostic summary {
+  color: var(--mu);
+  font-size: 12px;
+}
+.json-error-context {
+  margin: 10px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  background: var(--card);
+  white-space: pre-wrap;
+}
+.json-error-context mark {
+  padding: 1px 2px;
+  border-radius: 3px;
+  background: color-mix(in oklch, var(--json-error-color) 18%, transparent);
+  color: var(--json-error-color);
+  font-weight: 600;
+}
+.json-diagnostic summary {
+  cursor: pointer;
 }
 .url-parameters {
   margin-top: 18px;

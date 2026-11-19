@@ -7,16 +7,119 @@ import {
   convertInteger,
   createIdentifier,
   decodeJwt,
+  describeJsonError,
   formatJson,
+  jsonLevelTokens,
 } from "./dev-values.js";
+
+function bindJsonHighlight(output) {
+  const editor = document.createElement("div");
+  editor.className = "json-result-editor";
+  const highlight = document.createElement("pre");
+  highlight.className = "json-highlight";
+  highlight.setAttribute("aria-hidden", "true");
+  highlight.hidden = true;
+  output.before(editor);
+  editor.append(highlight, output);
+
+  // 高亮层与文本框共用换行和滚动，文本框继续负责选中、复制和拖动。
+  const sync = () => {
+    highlight.style.width = `${output.clientWidth}px`;
+    highlight.style.height = `${output.clientHeight}px`;
+    highlight.scrollTop = output.scrollTop;
+    highlight.scrollLeft = output.scrollLeft;
+  };
+  output.addEventListener("scroll", sync);
+  if (typeof ResizeObserver === "function") new ResizeObserver(sync).observe(output);
+  let previous = "";
+  return () => {
+    const text = output.value;
+    if (text === previous) return;
+    previous = text;
+    highlight.replaceChildren();
+    highlight.hidden = true;
+    // 大结果仍可滚动和复制，避免为密集的 JSON 构建大量高亮节点。
+    if (!text || text.length > 100_000) return;
+    try {
+      JSON.parse(text);
+    } catch {
+      return;
+    }
+
+    const content = document.createDocumentFragment();
+    let cursor = 0;
+    for (const { token, index, level } of jsonLevelTokens(text)) {
+      if (index > cursor) content.append(text.slice(cursor, index));
+      const span = document.createElement("span");
+      span.className = `json-level-${level % 5}`;
+      span.textContent = token;
+      content.append(span);
+      cursor = index + token.length;
+    }
+    content.append(text.slice(cursor));
+    highlight.replaceChildren(content);
+    highlight.hidden = false;
+    sync();
+  };
+}
+
+function revealJsonError(input, start, end) {
+  const style = getComputedStyle(input);
+  const mirror = document.createElement("div");
+  const marker = document.createElement("span");
+  marker.textContent = input.value.slice(start, end) || "\u200b";
+  // 按文本框实际宽度测量自动折行后的坐标，单行压缩 JSON 也能定位。
+  Object.assign(mirror.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    visibility: "hidden",
+    pointerEvents: "none",
+    boxSizing: "border-box",
+    width: `${input.clientWidth}px`,
+    padding: style.padding,
+    font: style.font,
+    letterSpacing: style.letterSpacing,
+    tabSize: style.tabSize,
+    whiteSpace: style.whiteSpace,
+    overflowWrap: style.overflowWrap,
+    wordBreak: style.wordBreak,
+  });
+  mirror.append(input.value.slice(0, start), marker, input.value.slice(end));
+  document.body.append(mirror);
+  const top = marker.getBoundingClientRect().top - mirror.getBoundingClientRect().top;
+  mirror.remove();
+
+  input.focus({ preventScroll: true });
+  input.setSelectionRange(start, end);
+  input.scrollTop = top - input.clientHeight / 2;
+  input.scrollIntoView({ block: "nearest" });
+}
 
 function initJson(panel) {
   const input = $("textarea", panel);
   const output = $("textarea[readonly]", panel);
   const status = $("[data-status]", panel);
   const indent = $("[data-json-indent]", panel);
+  const diagnostic = $("[data-json-diagnostic]", panel);
+  const errorText = $("[data-json-error]", panel);
+  const location = $("[data-json-location]", panel);
+  const context = $("[data-json-context]", panel);
+  const nativeError = $("[data-json-error-message]", panel);
+  const jump = $("[data-json-jump]", panel);
+  const refreshHighlight = bindJsonHighlight(output);
+  const clearDiagnostic = () => {
+    diagnostic.hidden = true;
+    input.removeAttribute("aria-invalid");
+    status.textContent = "";
+  };
+  input.addEventListener("input", () => {
+    clearDiagnostic();
+    refreshHighlight();
+  });
   for (const mode of ["format", "minify", "validate"]) {
     $(`[data-json-${mode}]`, panel).onclick = () => {
+      clearDiagnostic();
       try {
         if (input.value.length > 1_000_000)
           throw new Error("JSON 文本最多支持 100 万字符");
@@ -33,8 +136,26 @@ function initJson(panel) {
         status.textContent = "JSON 语法有效";
       } catch (error) {
         output.value = "";
-        status.textContent = error.message;
+        if (error instanceof SyntaxError) {
+          const details = describeJsonError(input.value, error.message);
+          errorText.textContent = details.reason;
+          nativeError.textContent = error.message;
+          const hasPosition = details.position !== null;
+          context.hidden = location.hidden = jump.hidden = !hasPosition;
+          if (hasPosition) {
+            location.textContent = `第 ${details.line} 行 · 第 ${details.column} 列`;
+            const mark = document.createElement("mark");
+            mark.textContent = details.marked || "文末";
+            context.replaceChildren(details.before, mark, details.after);
+            jump.onclick = () => revealJsonError(input, details.position, details.end);
+          }
+          input.setAttribute("aria-invalid", "true");
+          diagnostic.hidden = false;
+        } else {
+          status.textContent = error.message;
+        }
       }
+      refreshHighlight();
     };
   }
 }
