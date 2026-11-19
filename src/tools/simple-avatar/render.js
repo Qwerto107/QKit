@@ -45,7 +45,7 @@ export function generateSimpleAvatar() {
   // Draw the same features in two colors so they stay visible across the mask boundary.
   return `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 36 36" fill="none">
     <title>Simple Avatar</title>
-    <desc>Simple Avatar by Xuan Tang, adapted for QKit. https://tools.qwerto.cc/simple-avatar/</desc>
+    <desc>Simple Avatar by Xuan Tang, adapted for QKit. https://txstc55.github.io/simple-avatar/</desc>
     <rect width="36" height="36" fill="${face.colorPair[0]}"/>
     <mask id="foreground" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
       ${drawMaskShape(face, 0, "white")}

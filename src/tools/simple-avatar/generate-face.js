@@ -1,5 +1,5 @@
 // Adapted from Simple Avatar by Xuan Tang for QKit.
-// https://tools.qwerto.cc/simple-avatar/
+// https://txstc55.github.io/simple-avatar/
 import Sizing from "./sizing.js";
 import ColorReshading from "./colorReshading.js";
 import GeometryChecker from "./geometryChecker.js";

@@ -46,7 +46,7 @@ export function generateUglyAvatar() {
   ).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="-100 -100 200 200">
     <title>Ugly Avatar</title>
-    <desc>Ugly Avatar by Xuan Tang, adapted for QKit. https://github.com/txstc55/ugly-avatar — CC BY-NC 4.0</desc>
+    <desc>Ugly Avatar by Xuan Tang, adapted for QKit. https://txstc55.github.io/ugly-avatar/ — CC BY-NC 4.0</desc>
     <defs>
       <filter id="fuzzy">
         <feTurbulence baseFrequency="0.05" numOctaves="3" type="noise" result="noise"/>
