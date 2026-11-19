@@ -203,7 +203,9 @@ export function initPassword() {
   const minimumInputs = $$(".sc input", panel);
   const balance = $("#password-balance", panel);
   const ranges = $$("input[type=range]", panel);
-  const buttons = $$(".bar .btn", panel);
+  const [generate, clear] = $$(".bar .btn", panel);
+  const saveButton = $("#password-save-config", panel);
+  const resetButton = $("#password-reset-config", panel);
   const excluded = $("#password-excluded", panel);
   const exclusion = $("#password-exclusion", panel);
   excludeToggle.setAttribute("aria-controls", exclusion.id);
@@ -286,17 +288,14 @@ export function initPassword() {
     });
     update();
   };
-  // 配置改动后立即写入本地存储；存储不可用时静默跳过，不打断生成。
-  const save = () => {
-    try {
-      writeStorage("qkit.password", read());
-    } catch {
-      // 隐私模式等场景下不保存配置。
-    }
-  };
+  const save = () => writeStorage("qkit.password", read());
   const changed = () => {
     update();
-    save();
+    try {
+      save();
+    } catch {
+      // 自动保存失败时继续生成，手动保存通过按钮显示错误。
+    }
   };
   panel.addEventListener("change", changed);
   custom.addEventListener("input", changed);
@@ -309,13 +308,18 @@ export function initPassword() {
     changed();
   };
   restore(readStorage("qkit.password", DEFAULTS));
-  buttons[0].onclick = () =>
-    act(buttons[0], () =>
+  generate.onclick = () =>
+    act(generate, () =>
       renderPasswords($(".res", panel), generatePasswords(read())),
     );
-  buttons[1].onclick = () => renderPasswords($(".res", panel), []);
-  buttons[2].onclick = () =>
-    act(buttons[2], () => {
+  clear.onclick = () => renderPasswords($(".res", panel), []);
+  saveButton.onclick = () =>
+    act(saveButton, () => {
+      save();
+      notify("已保存配置");
+    });
+  resetButton.onclick = () =>
+    act(resetButton, () => {
       restore(DEFAULTS);
       writeStorage("qkit.password", DEFAULTS);
       notify("已恢复默认配置");

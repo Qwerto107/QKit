@@ -107,6 +107,13 @@
         <symbol id="trash" viewBox="0 0 24 24">
           <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
         </symbol>
+        <symbol id="save" viewBox="0 0 24 24">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12l4 4v12a2 2 0 0 1-2 2Z" />
+          <path d="M7 3v6h9V3M7 21v-8h10v8" />
+        </symbol>
+        <symbol id="reset" viewBox="0 0 24 24">
+          <path d="M3 12a9 9 0 1 1 9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M3 21v-5h5" />
+        </symbol>
         <symbol id="rf" viewBox="0 0 24 24">
           <path
             d="M21 12a9 9 0 0 1-15.5 6.2L3 16M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M3 21v-5h5"
@@ -265,7 +272,12 @@
               <button class="btn">
                 <svg class="i"><use href="#trash" /></svg>清空结果
               </button>
-              <button class="btn">重置配置</button>
+              <button type="button" class="btn" id="password-save-config">
+                <svg class="i" aria-hidden="true"><use href="#save" /></svg>保存配置
+              </button>
+              <button type="button" class="btn" id="password-reset-config">
+                <svg class="i" aria-hidden="true"><use href="#reset" /></svg>重置配置
+              </button>
             </div>
             <div class="res"></div>
           </div>

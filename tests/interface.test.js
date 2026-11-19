@@ -187,8 +187,8 @@ test("完整页面的路由、配色、密码限制、下拉及诗词联动正�
 
   $("#nav-pwd").click();
   assert.equal(window.location.pathname, "/password");
-  assert.equal($$("#pwd .password-item").length, 12);
-  assert.equal($$("#pwd input[type=range]")[1].value, "12");
+  assert.equal($("#pwd .password-item").length, 12);
+  assert.equal($("#pwd input[type=range]")[1].value, "12");
   const characters = $$("#pwd .chips")[0].querySelectorAll("input");
   const options = $$("#pwd .chips")[1].querySelectorAll("input");
   const exclusion = $("#password-exclusion");
@@ -225,20 +225,26 @@ test("完整页面的路由、配色、密码限制、下拉及诗词联动正�
   change(options[1]);
   assert.equal(digits.max, "5");
   assert.equal(digits.value, "5");
-  const passwordButtons = $$("#pwd .bar .btn");
+  const passwordSave = $("#password-save-config");
+  const passwordReset = $("#password-reset-config");
   const balance = $("#password-balance");
   const savedPassword = JSON.parse(window.localStorage.getItem("qkit.password"));
   assert.equal(savedPassword.excluded, "234");
   assert.equal(savedPassword.excludeSpecified, true);
   assert.equal(savedPassword.minimums[0], 5);
+  window.localStorage.removeItem("qkit.password");
+  passwordSave.click();
+  await tick();
+  assert.deepEqual(JSON.parse(window.localStorage.getItem("qkit.password")), savedPassword);
+  assert.equal($("#toast").textContent, "已保存配置");
   options[2].checked = false;
   change(options[2]);
   assert.ok(minimums.every((input) => input.disabled));
   assert.equal(balance.disabled, true);
   assert.equal(digitPlus.disabled, true);
-  passwordButtons[2].click();
+  passwordReset.click();
   await tick();
-  assert.equal($$("#pwd input[type=range]")[1].value, "12");
+  assert.equal($("#pwd input[type=range]")[1].value, "12");
   assert.equal(exclusion.hidden, true);
   assert.equal(excluded.value, "");
   assert.equal(digits.value, "6");
@@ -257,7 +263,7 @@ test("完整页面的路由、配色、密码限制、下拉及诗词联动正�
   digits.previousElementSibling.click();
   assert.equal(digits.value, "4");
   assert.equal(JSON.parse(window.localStorage.getItem("qkit.password")).minimums[0], 4);
-  passwordButtons[2].click();
+  passwordReset.click();
   await tick();
   for (let i = 1; i < characters.length; i++) characters[i].checked = false;
   change(characters[1]);
@@ -265,7 +271,7 @@ test("完整页面的路由、配色、密码限制、下拉及诗词联动正�
   assert.equal(length.max, "8");
   assert.equal(length.value, "8");
   assert.equal(minimums[1].disabled, true);
-  passwordButtons[2].click();
+  passwordReset.click();
   await tick();
   assert.equal(length.value, "24");
   assert.equal(length.closest(".rg").querySelector(".step input").value, "24");
