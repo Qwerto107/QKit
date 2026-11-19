@@ -384,20 +384,79 @@ function matchInWorker(syntax, input) {
   });
 }
 
+function bindRegexOptions(panel, syntax) {
+  const common = $("[data-regex-common]", panel);
+  const advanced = $("[data-regex-advanced]", panel);
+  const advancedOptions = $(".chips", advanced);
+  const options = new Map();
+  const addOption = (container, flag, text, help) => {
+    const label = document.createElement("label");
+    label.className = "chip";
+    label.title = help ? `${flag} · ${help}` : flag;
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = flag === "g";
+    const box = document.createElement("span");
+    box.className = "bx";
+    box.setAttribute("aria-hidden", "true");
+    box.innerHTML = icon("ck");
+    label.append(input, box, text);
+    container.append(label);
+    options.set(flag, input);
+  };
+  for (const [flag, label, help] of [
+    ["g", "查找全部", "取消勾选时只返回第一个匹配"],
+    ["i", "忽略大小写", "例如 abc 也匹配 ABC"],
+    ["m", "按行匹配开头和结尾", "^ 和 $ 可以匹配每一行的开头和结尾"],
+    ["s", "点号匹配换行", "让 . 也能匹配换行符"],
+  ]) addOption(common, flag, label, help);
+  for (const [flag, label, help] of [
+    ["d", "记录捕获组索引", "在 JavaScript 正则引擎中启用索引记录"],
+    ["u", "Unicode 字符模式", "按完整 Unicode 字符处理匹配"],
+    ["v", "Unicode 字符集运算", "可在字符类里使用交集和差集"],
+    ["y", "从当前位置连续匹配", "只能从当前位置开始，失败时不向后查找"],
+    ["x", "允许格式空格和注释", "忽略表达式中用于排版的空白，并支持 # 注释"],
+    ["U", "默认尽量少匹配", "反转量词的贪婪行为"],
+    ["A", "从文本起点匹配", "从当前查找起点开始匹配"],
+    ["D", "$ 只匹配文本末尾", "未开启按行匹配时生效"],
+  ]) addOption(advancedOptions, flag, `${label}（${flag}）`, help);
+
+  const unicode = options.get("u");
+  const unicodeSets = options.get("v");
+  unicode.onchange = () => {
+    if (unicode.checked) unicodeSets.checked = false;
+  };
+  unicodeSets.onchange = () => {
+    if (unicodeSets.checked) unicode.checked = false;
+  };
+  const sync = () => {
+    const supported = REGEX_FLAGS[syntax.value];
+    for (const [flag, input] of options) {
+      // PCRE2 已启用 UTF-8，u 只在 JavaScript 中作为可选项。
+      const visible = supported.includes(flag) && (flag !== "u" || syntax.value === "javascript");
+      input.parentElement.hidden = input.disabled = !visible;
+    }
+    advanced.hidden = ![...advancedOptions.children].some((label) => !label.hidden);
+  };
+  syntax.addEventListener("change", sync);
+  sync();
+  return () => [...options]
+    .filter(([, input]) => input.checked && !input.disabled)
+    .map(([flag]) => flag)
+    .join("");
+}
+
 function initRegex(panel) {
   const syntax = $("[data-regex-syntax]", panel);
   const pattern = $("[data-regex-pattern]", panel);
-  const flags = $("[data-regex-flags]", panel);
+  const readFlags = bindRegexOptions(panel, syntax);
   const source = $("[data-regex-text]", panel);
   const run = $("[data-regex-run]", panel);
   const preview = $("[data-regex-preview]", panel);
   const groups = $("[data-regex-groups]", panel);
   const status = $("[data-status]", panel);
-  const supportedFlags = $("[data-regex-supported-flags]", panel);
   const syncSyntax = () => {
-    const modifiers = REGEX_FLAGS[syntax.value];
     pattern.placeholder = syntax.value === "javascript" ? "(?<word>\\w+)" : "(?P<word>\\w+)";
-    supportedFlags.textContent = `支持 ${modifiers.split("").join("、")}。g 查找全部匹配。`;
     preview.hidden = groups.hidden = true;
     status.textContent = "";
   };
@@ -412,7 +471,7 @@ function initRegex(panel) {
       const text = source.value;
       const { hits, truncated } = await matchInWorker(selectedSyntax, {
         pattern: pattern.value,
-        flags: flags.value.trim(),
+        flags: readFlags(),
         text,
       });
       if (syntax.value !== selectedSyntax) return;

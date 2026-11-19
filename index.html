@@ -1311,20 +1311,18 @@
                 maxlength="5000"
                 spellcheck="false"
             /></label>
-            <label class="fl"
-              >标志<input
-                class="in mono"
-                data-regex-flags
-                value="g"
-                placeholder="如 gim"
-                maxlength="9"
-                spellcheck="false"
-            /></label>
           </div>
-          <p class="hint" data-regex-supported-flags></p>
-          <label class="f"
-            ><span class="fh">测试文本</span
-            ><textarea data-regex-text></textarea>
+          <fieldset class="regex-options">
+            <legend>匹配选项</legend>
+            <div class="chips" data-regex-common></div>
+            <details data-regex-advanced hidden>
+              <summary>高级选项</summary>
+              <div class="chips"></div>
+            </details>
+          </fieldset>
+          <label class="fl">
+            <span>测试文本</span>
+            <textarea class="in mono" data-regex-text aria-label="测试文本"></textarea>
           </label>
           <div class="bar">
             <button class="btn p" data-regex-run>测试匹配</button>

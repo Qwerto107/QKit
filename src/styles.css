@@ -925,7 +925,8 @@ input[type="range"]::-moz-range-thumb {
   resize: vertical;
   outline: 0;
 }
-#qrcode [data-qrcode-input] {
+#qrcode [data-qrcode-input],
+#regex [data-regex-text] {
   min-height: 170px;
   resize: vertical;
 }
@@ -1810,8 +1811,29 @@ input[type="range"]::-moz-range-thumb {
 .avatar-credit a {
   font-weight: 600;
 }
-#regex [data-regex-supported-flags] {
-  margin: -6px 0 14px;
+.regex-options {
+  min-width: 0;
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+}
+.regex-options legend {
+  margin-bottom: 6px;
+  padding: 0;
+  color: var(--mu);
+  font-size: 12px;
+}
+.regex-options details {
+  margin-top: 8px;
+}
+.regex-options summary {
+  width: fit-content;
+  color: var(--mu);
+  font-size: 12px;
+  cursor: pointer;
+}
+.regex-options details .chips {
+  margin-top: 7px;
 }
 .pg {
   display: grid;
